@@ -10,7 +10,7 @@ import {
 const NONE = "none";
 const STYLES = ["solid", "dashed", "dotted", "double"] as const;
 
-/** Đường kẻ mẫu cho 1 kiểu viền (vẽ bằng border-top). */
+/** Sample line for a border style (drawn using border-top). */
 function StyleLine({ style }: { style: string }) {
   return (
     <span
@@ -28,7 +28,7 @@ interface BorderStyleSelectProps {
   onChange: (value: string) => void;
 }
 
-/** Select kiểu viền hiển thị đường kẻ trực quan thay vì chữ. */
+/** Border-style select that shows a visual line preview instead of text. */
 export function BorderStyleSelect({ value, onChange }: BorderStyleSelectProps) {
   const intl = useIntl();
   return (
@@ -38,7 +38,7 @@ export function BorderStyleSelect({ value, onChange }: BorderStyleSelectProps) {
       </SelectTrigger>
       <SelectContent>
         <SelectItem value={NONE}>
-          {intl.formatMessage({ defaultMessage: "Chọn…", id: "BG3ISn" })}
+          {intl.formatMessage({ defaultMessage: "Select…", id: "select" })}
         </SelectItem>
         {STYLES.map((s) => (
           <SelectItem key={s} value={s}>

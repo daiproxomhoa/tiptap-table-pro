@@ -1,6 +1,6 @@
 import { useIntl } from "../../../lib/intl";
 import type { Editor } from "@tiptap/react";
-import { AlignCenter, AlignLeft, AlignRight } from "lucide-react";
+import { AlignCenter, AlignLeft, AlignRight } from "../../../lib/icons";
 import { Toggle } from "../../primitives/toggle";
 import { Tip } from "./Tip";
 
@@ -16,8 +16,7 @@ export function TableAlignControls({
     <>
       <Tip
         label={intl.formatMessage({
-          defaultMessage: "Căn trái bảng",
-          id: "wgqC+A",
+          defaultMessage: "Align table left", id: "alignTableLeft",
         })}
       >
         <Toggle
@@ -36,8 +35,7 @@ export function TableAlignControls({
       </Tip>
       <Tip
         label={intl.formatMessage({
-          defaultMessage: "Căn giữa bảng",
-          id: "hb99+d",
+          defaultMessage: "Align table center", id: "alignTableCenter",
         })}
       >
         <Toggle
@@ -56,8 +54,7 @@ export function TableAlignControls({
       </Tip>
       <Tip
         label={intl.formatMessage({
-          defaultMessage: "Căn phải bảng",
-          id: "VOFrmT",
+          defaultMessage: "Align table right", id: "alignTableRight",
         })}
       >
         <Toggle

@@ -1,13 +1,14 @@
 export type HandleKey =
   "left" | "right" | "top" | "bottom" | "tl" | "tr" | "bl" | "br";
 
-/** Cấu hình mỗi handle: chế độ resize, dấu áp delta chuột (sx/sy = -1 là mép
- * trái/trên, kéo ngược dấu so với mép phải/dưới), và NEO trong box của table
- * (cx: cạnh trái/giữa/phải, cy: cạnh trên/giữa/dưới — render tính left/top px
- * theo box thật của table, không dùng right:0/bottom:0 của wrapper nữa vì table
- * có thể tràn wrapper khi content ép cột giãn).
- * mode "height"/"both" chỉ đổi chiều cao HÀNG CUỐI của bảng (height per-row);
- * "width" đổi bề rộng cả bảng. */
+/** Config for each handle: the resize mode, the sign applied to the mouse delta (sx/sy =
+ * -1 is the left/top edge, dragged in the opposite sign to the right/bottom edge), and the
+ * ANCHOR within the table's box (cx: left/center/right edge, cy: top/middle/bottom edge —
+ * render computes left/top px from the table's real box, no longer using the wrapper's
+ * right:0/bottom:0 because the table can overflow the wrapper when content forces columns
+ * to expand).
+ * mode "height"/"both" only changes the height of the table's LAST ROW (height per-row);
+ * "width" changes the whole table's width. */
 export const HANDLES: {
   key: HandleKey;
   mode: "width" | "height" | "both";

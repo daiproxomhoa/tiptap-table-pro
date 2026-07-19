@@ -22,7 +22,7 @@ interface CellPropertiesDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-/** Đọc attr ô hiện tại (gộp tableCell + tableHeader, ô nào active thì có giá trị). */
+/** Read the current cell's attributes (merging tableCell + tableHeader; whichever is active has values). */
 function currentCellAttrs(editor: Editor) {
   return {
     ...editor.getAttributes("tableCell"),
@@ -59,7 +59,7 @@ export function CellPropertiesDialog({
 
   const save = () => {
     const chain = editor.chain().focus();
-    // Đổi loại ô (cell ↔ header) nếu khác hiện tại.
+    // Change the cell type (cell ↔ header) if it differs from the current one.
     if ((cellType === "header") !== isHeader) chain.toggleHeaderCell();
     chain
       .setCellAttribute("scope", scope === NONE ? null : scope)
@@ -78,7 +78,7 @@ export function CellPropertiesDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            <FormattedMessage defaultMessage="Thuộc tính ô" id="GL9oJn" />
+            <FormattedMessage defaultMessage="Cell properties" id="cellProperties" />
           </DialogTitle>
         </DialogHeader>
 
@@ -101,8 +101,7 @@ export function CellPropertiesDialog({
               <div className="space-y-3">
                 <FieldLabel
                   label={intl.formatMessage({
-                    defaultMessage: "Độ dày viền",
-                    id: '6pR4+b',
+                    defaultMessage: "Border width", id: "borderWidth",
                   })}
                 >
                   <input
@@ -115,8 +114,7 @@ export function CellPropertiesDialog({
 
                 <FieldLabel
                   label={intl.formatMessage({
-                    defaultMessage: "Kiểu viền",
-                    id: 'nHzidS',
+                    defaultMessage: "Border style", id: "borderStyle",
                   })}
                 >
                   <BorderStyleSelect
@@ -127,8 +125,7 @@ export function CellPropertiesDialog({
 
                 <CellColorField
                   label={intl.formatMessage({
-                    defaultMessage: "Màu viền",
-                    id: "a3ZhX3",
+                    defaultMessage: "Border color", id: "borderColor",
                   })}
                   value={borderColor}
                   onChange={setBorderColor}
@@ -136,8 +133,7 @@ export function CellPropertiesDialog({
 
                 <CellColorField
                   label={intl.formatMessage({
-                    defaultMessage: "Màu nền",
-                    id: 'Kl15gc',
+                    defaultMessage: "Background color", id: "background",
                   })}
                   value={bgColor}
                   onChange={setBgColor}
@@ -153,10 +149,10 @@ export function CellPropertiesDialog({
             className="min-w-25"
             onClick={() => onOpenChange(false)}
           >
-            <FormattedMessage defaultMessage="Huỷ" id="NfX0sh" />
+            <FormattedMessage defaultMessage="Cancel" id="cancel" />
           </Button>
           <Button className="min-w-25" onClick={save}>
-            <FormattedMessage defaultMessage="Lưu" id="oa/wrx" />
+            <FormattedMessage defaultMessage="Save" id="save" />
           </Button>
         </DialogFooter>
       </DialogContent>

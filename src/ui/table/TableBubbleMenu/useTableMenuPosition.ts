@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import type { Editor } from "@tiptap/react";
 import { focusedTableEl } from "../utils";
 
-/** Phần tử tổ tiên gần nhất tạo containing block (position != static) để định
- * vị absolute theo nó — chính là khung cuộn editor bọc ngoài. */
+/** The nearest ancestor element that establishes a containing block
+ * (position != static), used as the reference for absolute positioning — this
+ * is the outer editor scroll container. */
 function positionedAncestor(el: HTMLElement): HTMLElement | null {
   let p = el.parentElement;
   while (p) {
@@ -13,8 +14,8 @@ function positionedAncestor(el: HTMLElement): HTMLElement | null {
   return null;
 }
 
-// below: không đủ chỗ phía trên (bảng sát mép trên khung) → lật menu xuống
-// dưới đáy bảng (bottom). y = top bảng, bottom = đáy bảng (toạ độ trong khung).
+// below: not enough room above (the table is near the top edge of the container) → flip the menu down
+// below the bottom of the table. y = top of the table, bottom = bottom of the table (coordinates within the container).
 export function useTableMenuPosition(editor: Editor, inTable: boolean) {
   const [pos, setPos] = useState<{
     x: number;
@@ -29,15 +30,15 @@ export function useTableMenuPosition(editor: Editor, inTable: boolean) {
     const updatePos = () => {
       const table = focusedTableEl(editor);
       if (!table) return;
-      // Toạ độ absolute so với khung cuộn editor (containing block), không phải
-      // viewport — menu cuộn cùng nội dung và bị khung cuộn cắt tự nhiên.
+      // Coordinates are absolute relative to the editor scroll container (the containing block), not the
+      // viewport — so the menu scrolls with the content and is naturally clipped by the scroll container.
       const host = positionedAncestor(editor.view.dom);
       const r = table.getBoundingClientRect();
       const base = host?.getBoundingClientRect();
       const ox = host ? r.left - base!.left + host.scrollLeft : r.left;
       const oy = host ? r.top - base!.top + host.scrollTop : r.top;
-      // Khoảng trống phía trên top bảng trong vùng nhìn thấy của khung; thiếu
-      // chỗ cho menu (~44px) → lật menu xuống dưới mép trên bảng.
+      // The empty space above the top of the table within the container's visible area; if there
+      // isn't enough room for the menu (~44px) → flip the menu below the top edge of the table.
       const spaceAbove = host ? r.top - base!.top : r.top;
       setPos({
         x: ox + r.width / 2,
@@ -47,7 +48,7 @@ export function useTableMenuPosition(editor: Editor, inTable: boolean) {
       });
     };
 
-    // rAF: chờ layout settle ở lần focus đầu trước khi đọc rect
+    // rAF: wait for the layout to settle on the first focus before reading the rect
     const raf = requestAnimationFrame(updatePos);
     editor.on("selectionUpdate", updatePos);
     editor.on("update", updatePos);

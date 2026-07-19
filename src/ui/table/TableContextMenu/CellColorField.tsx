@@ -14,7 +14,7 @@ const PRESETS = [
   "#e2e8f0",
   "#f1f5f9",
   "#ffffff",
-  // màu
+  // colors
   "#dc2626",
   "#f97316",
   "#f59e0b",
@@ -32,7 +32,7 @@ interface CellColorFieldProps {
   onChange: (hex: string) => void;
 }
 
-/** Ô chọn màu (preset + swatch + hex) dùng trong dialog thuộc tính ô. */
+/** Color picker field (preset + swatch + hex) used in the cell properties dialog. */
 export function CellColorField({
   label,
   value,
@@ -81,7 +81,7 @@ export function CellColorField({
           />
           {value && (
             <Button variant="outline" size="sm" onClick={() => onChange("")}>
-              <FormattedMessage defaultMessage="Mặc định" id="kQYjdX" />
+              <FormattedMessage defaultMessage="Default" id="default" />
             </Button>
           )}
         </div>

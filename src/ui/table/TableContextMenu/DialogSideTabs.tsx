@@ -3,7 +3,7 @@ import { cn } from "../../../lib/utils";
 
 export type DialogTab = "general" | "advanced";
 
-/** Tabs dọc (Chung / Nâng cao) dùng chung cho dialog thuộc tính bảng và ô. */
+/** Vertical tabs (General / Advanced) shared by the table and cell properties dialogs. */
 export function DialogSideTabs({
   tab,
   onChange,
@@ -26,9 +26,9 @@ export function DialogSideTabs({
           )}
         >
           {t === "general" ? (
-            <FormattedMessage defaultMessage="Chung" id="5o5PeN" />
+            <FormattedMessage defaultMessage="General" id="general" />
           ) : (
-            <FormattedMessage defaultMessage="Nâng cao" id="m3OPAl" />
+            <FormattedMessage defaultMessage="Advanced" id="advanced" />
           )}
         </button>
       ))}

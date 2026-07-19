@@ -2,18 +2,18 @@ import type { Editor } from "@tiptap/react";
 import { CellSelection, TableMap } from "@tiptap/pm/tables";
 import type { Node as PMNode } from "@tiptap/pm/model";
 
-/** Toạ độ table hiện tại từ selection: node, vị trí bắt đầu, map, ô đang ở. */
+/** Current table context derived from the selection: node, start position, map, and the current cell. */
 export function tableContext(editor: Editor) {
   const { state } = editor.view;
   const sel = state.selection;
   const $cell = sel instanceof CellSelection ? sel.$anchorCell : sel.$anchor;
-  // Tìm depth của node table
+  // Find the depth of the table node
   for (let d = $cell.depth; d > 0; d--) {
     const node = $cell.node(d);
     if (node.type.spec.tableRole === "table") {
-      const tableStart = $cell.before(d) + 1; // vị trí ngay trong table
+      const tableStart = $cell.before(d) + 1; // position just inside the table
       const map = TableMap.get(node);
-      // cột/hàng của ô hiện tại
+      // column/row of the current cell
       const cellPos = cellStartFor($cell, d);
       const rel = cellPos - tableStart;
       const rect = map.findCell(rel);
@@ -23,19 +23,19 @@ export function tableContext(editor: Editor) {
   return null;
 }
 
-/** Vị trí (relative to doc) của ô chứa $pos tại depth bảng d. */
+/** Position (relative to the doc) of the cell containing $pos at table depth d. */
 function cellStartFor($pos: ReturnType<Editor["state"]["doc"]["resolve"]>, tableDepth: number) {
-  // Ô là con của row (depth tableDepth+2 = cell). before(cellDepth) là vị trí ô.
+  // The cell is a child of the row (depth tableDepth+2 = cell). before(cellDepth) is the cell position.
   const cellDepth = tableDepth + 2;
   return $pos.before(Math.min(cellDepth, $pos.depth));
 }
 
-/** Lấy node của 1 hàng (row) theo index. */
+/** Get the node of a single row by index. */
 export function rowNode(table: PMNode, rowIndex: number): PMNode {
   return table.child(rowIndex);
 }
 
-/** Lấy danh sách cell node của 1 cột theo index (mỗi hàng 1 cell). */
+/** Get the list of cell nodes for a single column by index (one cell per row). */
 export function columnCells(
   table: PMNode,
   map: TableMap,
@@ -52,7 +52,7 @@ export function columnCells(
   return cells;
 }
 
-/** Hàng index có phải header (mọi ô là tableHeader)? */
+/** Is the row at this index a header (every cell is a tableHeader)? */
 export function isHeaderRow(table: PMNode, rowIndex: number): boolean {
   const row = table.child(rowIndex);
   let allHeader = row.childCount > 0;

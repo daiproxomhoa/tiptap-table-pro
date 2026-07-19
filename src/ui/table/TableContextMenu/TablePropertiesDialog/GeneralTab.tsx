@@ -34,8 +34,7 @@ export function GeneralTab({
       <div className="grid grid-cols-2 gap-3">
         <FieldLabel
           label={intl.formatMessage({
-            defaultMessage: "Chiều rộng",
-            id: "lFBxwl",
+            defaultMessage: "Width", id: "width",
           })}
         >
           <Input
@@ -46,8 +45,7 @@ export function GeneralTab({
         </FieldLabel>
         <FieldLabel
           label={intl.formatMessage({
-            defaultMessage: "Chiều cao",
-            id: "vbQmWR",
+            defaultMessage: "Height", id: "height",
           })}
         >
           <Input
@@ -59,8 +57,7 @@ export function GeneralTab({
       </div>
       <FieldLabel
         label={intl.formatMessage({
-          defaultMessage: "Căn lề",
-          id: "LysRyX",
+          defaultMessage: "Alignment", id: "alignment",
         })}
       >
         <Select value={align} onValueChange={(v) => setAlign(v as Align)}>
@@ -70,20 +67,17 @@ export function GeneralTab({
           <SelectContent>
             <SelectItem value="left">
               {intl.formatMessage({
-                defaultMessage: "Trái",
-                id: "vTehD7",
+                defaultMessage: "Left", id: "left",
               })}
             </SelectItem>
             <SelectItem value="center">
               {intl.formatMessage({
-                defaultMessage: "Giữa",
-                id: "rRGYkm",
+                defaultMessage: "Center", id: "center",
               })}
             </SelectItem>
             <SelectItem value="right">
               {intl.formatMessage({
-                defaultMessage: "Phải",
-                id: "r+CuAX",
+                defaultMessage: "Right", id: "right",
               })}
             </SelectItem>
           </SelectContent>

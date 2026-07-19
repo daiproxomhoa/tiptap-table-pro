@@ -1,12 +1,13 @@
 /**
- * Toán thuần cho resize bảng — tách khỏi component để test được và tái dùng
- * chung 3 handle (table / cột / hàng). KHÔNG đụng DOM, editor, React ở đây:
- * mọi input là số/mảng số đo sẵn, output là số/mảng/chuỗi để component áp.
+ * Pure math for table resizing — separated from the component so it is testable and
+ * reused across all 3 handles (table / column / row). Does NOT touch the DOM, editor, or
+ * React here: every input is a number/array of pre-measured numbers, and the output is a
+ * number/array/string for the component to apply.
  */
 
-/** Bề rộng bảng đang kéo, kẹp trong [minW, maxW]. `sx` = 1 kéo mép phải, -1 kéo
- * mép trái (đảo dấu delta). minW = min-content cột; maxW = bề rộng container
- * (không cho bảng rộng quá 100%). Làm tròn về px nguyên. */
+/** Width of the table being dragged, clamped to [minW, maxW]. `sx` = 1 drags the right
+ * edge, -1 drags the left edge (inverts the delta sign). minW = the columns' min-content;
+ * maxW = the container width (don't let the table exceed 100%). Rounded to whole px. */
 export function clampDragWidth(
   startW: number,
   mouseDx: number,
@@ -17,8 +18,8 @@ export function clampDragWidth(
   return Math.min(maxW, Math.max(minW, Math.round(startW + mouseDx * sx)));
 }
 
-/** Chiều cao bảng đang kéo, kẹp không nhỏ hơn minTableH (bảng khi hàng cuối co
- * về sàn). `sy` = 1 kéo mép dưới, -1 kéo mép trên. */
+/** Height of the table being dragged, clamped to no less than minTableH (the table when
+ * the last row shrinks to its floor). `sy` = 1 drags the bottom edge, -1 drags the top edge. */
 export function clampDragHeight(
   startH: number,
   mouseDy: number,
@@ -28,8 +29,8 @@ export function clampDragHeight(
   return Math.max(minTableH, Math.round(startH + mouseDy * sy));
 }
 
-/** Chiều cao TỐI THIỂU của cả bảng = chiều cao hiện tại trừ phần hàng cuối có
- * thể co (startRowH → minRowH). Không âm. */
+/** The MINIMUM height of the whole table = the current height minus the amount the last
+ * row can shrink (startRowH → minRowH). Never negative. */
 export function minTableHeight(
   startH: number,
   startRowH: number,
@@ -38,8 +39,8 @@ export function minTableHeight(
   return startH - Math.max(0, startRowH - minRowH);
 }
 
-/** Chiều cao commit cho hàng cuối = chiều cao đầu + phần bảng thay đổi, sàn
- * minRowH. */
+/** The height to commit for the last row = the starting height + the table's change,
+ * floored at minRowH. */
 export function finalRowHeight(
   startRowH: number,
   pendingH: number,
@@ -50,10 +51,11 @@ export function finalRowHeight(
 }
 
 /**
- * Scale px từng cột theo tỉ lệ width bảng mới / tổng px cột hiện tại, GIỮ tỉ lệ
- * giữa các cột. Floor ≥1: cột 0px làm normalizeColWidths bail (nó bỏ qua khi có
- * col ≤ 0) → cả bảng kẹt px cũ. Trả null khi chưa đo được cột (sumColPx ≤ 0) để
- * caller bỏ qua bước commit colwidth.
+ * Scale each column's px by the ratio new table width / current total column px, KEEPING
+ * the ratio between columns. Floor ≥1: a 0px column makes normalizeColWidths bail (it
+ * skips when any col ≤ 0) → the whole table stays stuck at the old px. Returns null when
+ * the columns haven't been measured yet (sumColPx ≤ 0) so the caller skips the colwidth
+ * commit step.
  */
 export function scaleColWidths(
   startColPx: number[],
@@ -64,16 +66,16 @@ export function scaleColWidths(
   return startColPx.map((px) => Math.max(1, Math.round((px * pendingW) / sumColPx)));
 }
 
-/** Giá trị width để commit: `%` theo container nếu đo được, ngược lại px tuyệt
- * đối. Làm tròn 1 chữ số thập phân cho `%` (khớp badge). */
+/** The width value to commit: `%` relative to the container if measurable, otherwise an
+ * absolute px. Rounded to 1 decimal place for `%` (matching the badge). */
 export function widthValue(pendingW: number, container: number): string {
   return container > 0
     ? `${Math.round((pendingW / container) * 1000) / 10}%`
     : `${pendingW}px`;
 }
 
-/** Kẹp toạ độ X của ranh cột trong khoảng [leftEdge+min, rightEdge-min] —
- * cột trái/phải đều ≥ minCol. */
+/** Clamp the column boundary's X coordinate within [leftEdge+min, rightEdge-min] —
+ * both the left and right columns stay ≥ minCol. */
 export function clampColBoundary(
   clientX: number,
   leftEdge: number,
@@ -83,8 +85,9 @@ export function clampColBoundary(
   return Math.max(leftEdge + minCol, Math.min(rightEdge - minCol, clientX));
 }
 
-/** Chia lại bề rộng 2 cột kề sau khi kéo ranh tới `x`: cột trái = x-leftEdge,
- * cột phải = total - trái (giữ tổng). Trả [trái, phải]. */
+/** Redistribute the widths of 2 adjacent columns after dragging the boundary to `x`:
+ * left column = x-leftEdge, right column = total - left (preserving the total). Returns
+ * [left, right]. */
 export function splitAdjacentWidths(
   x: number,
   leftEdge: number,
@@ -94,8 +97,8 @@ export function splitAdjacentWidths(
   return [left, total - left];
 }
 
-/** Kẹp toạ độ Y mép dưới hàng: không lên trên (rowTop + minH) — hàng không thấp
- * hơn nội dung. */
+/** Clamp the Y coordinate of a row's bottom edge: it can't go above (rowTop + minH) —
+ * the row is never shorter than its content. */
 export function clampRowBottom(
   clientY: number,
   rowTop: number,

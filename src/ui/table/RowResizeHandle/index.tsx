@@ -3,25 +3,29 @@ import { createPortal } from "react-dom";
 import { useEditorState, type Editor } from "@tiptap/react";
 import { focusedTableEl, setBodyStyle, setRowHeight } from "../utils";
 import { clampRowBottom } from "../resize-math";
+import { cn } from "../../../lib/utils";
 
 interface RowResizeHandleProps {
   editor: Editor;
+  /** Extra class names merged onto each row handle. */
+  className?: string;
 }
 
 /**
- * Kéo mép dưới từng <tr> để chỉnh chiều cao hàng đó (height per-row lưu trên
- * row node — xem TableRowWithHeight). Handle portal vào .tableWrapper của bảng
- * đang focus, mỗi hàng (trừ hàng cuối) có 1 thanh mỏng ở mép dưới, chỉ hiện
- * khi hover. Kéo KHÔNG resize hàng ngay: hiện 1 "line ảo" ngang chạy theo
- * chuột; THẢ mới commit 1 transaction ghi height vào row node đó.
+ * Drag the bottom edge of each <tr> to adjust that row's height (height per-row stored on
+ * the row node — see TableRowWithHeight). The handle is portaled into the .tableWrapper of
+ * the focused table; each row (except the last) has a thin bar at its bottom edge that
+ * only shows on hover. Dragging does NOT resize the row immediately: it shows a horizontal
+ * "ghost line" that follows the mouse; only on RELEASE does it commit a single transaction
+ * writing the height into that row node.
  */
-export function RowResizeHandle({ editor }: RowResizeHandleProps) {
+export function RowResizeHandle({ editor, className }: RowResizeHandleProps) {
   const [wrapperEl, setWrapperEl] = useState<HTMLElement | null>(null);
   const wrapperRef = useRef<HTMLElement | null>(null);
   const tableRef = useRef<HTMLElement | null>(null);
   const isDragging = useRef(false);
   const [rows, setRows] = useState<HTMLElement[]>([]);
-  // Line ảo khi đang kéo: toạ độ top (px) trong wrapper, null khi không kéo.
+  // The ghost line while dragging: top coordinate (px) within the wrapper, null when not dragging.
   const [guideTop, setGuideTop] = useState<number | null>(null);
 
   const inTable = useEditorState({
@@ -77,16 +81,16 @@ export function RowResizeHandle({ editor }: RowResizeHandleProps) {
 
     const trRect = tr.getBoundingClientRect();
     const rowTop = trRect.top;
-    // Min = chiều cao nội dung hàng. Tạm ép tr.style.height='0' rồi đọc
-    // scrollHeight — nếu đọc khi hàng đang bị height cũ kéo cao thì scrollHeight
-    // = chính height đó (content < box) → minH = height hiện tại → hàng chỉ to,
-    // không co được. Khôi phục ngay sau khi đo.
+    // Min = the row's content height. Temporarily force tr.style.height='0' then read
+    // scrollHeight — if read while the row is still stretched tall by its old height,
+    // scrollHeight equals that height (content < box) → minH = the current height → the
+    // row can only grow, not shrink. Restore immediately after measuring.
     const prev = tr.style.height;
     tr.style.height = "0";
     const minH = tr.scrollHeight;
     tr.style.height = prev;
 
-    // Đổi toạ độ trang (clientY) → toạ độ trong wrapper cho line ảo.
+    // Convert page coordinates (clientY) → coordinates within the wrapper for the ghost line.
     const wrapTop = () => wrapper.getBoundingClientRect().top;
     const clampY = (clientY: number) => clampRowBottom(clientY, rowTop, minH);
 
@@ -121,16 +125,19 @@ export function RowResizeHandle({ editor }: RowResizeHandleProps) {
           <div
             key={i}
             onMouseDown={(e) => startDrag(e, i)}
-            className="group absolute left-0 right-0 flex h-2.5 -translate-y-1/2 items-center cursor-ns-resize"
+            className={cn(
+              "ttp-row-resize-handle group absolute left-0 right-0 flex h-2.5 -translate-y-1/2 items-center cursor-ns-resize",
+              className,
+            )}
             style={{ top }}
           >
-            <div className="h-0.5 w-full rounded-full bg-blue-500 opacity-0 shadow-[0_0_8px_2px] shadow-blue-500/40 transition-all duration-200 group-hover:h-1 group-hover:opacity-100" />
+            <div className="ttp-row-resize-handle__bar h-0.5 w-full rounded-full bg-blue-500 opacity-0 shadow-[0_0_8px_2px] shadow-blue-500/40 transition-all duration-200 group-hover:h-1 group-hover:opacity-100" />
           </div>
         );
       })}
       {guideTop !== null && (
         <div
-          className="pointer-events-none absolute left-0 right-0 z-20 h-1 -translate-y-1/2 rounded bg-blue-500"
+          className="ttp-row-resize-handle__guide pointer-events-none absolute left-0 right-0 z-20 h-1 -translate-y-1/2 rounded bg-blue-500"
           style={{ top: guideTop }}
         />
       )}

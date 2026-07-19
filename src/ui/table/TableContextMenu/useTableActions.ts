@@ -3,12 +3,13 @@ import { Fragment, type Node as PMNode } from "@tiptap/pm/model";
 import { tableContext, rowNode, columnCells, isHeaderRow } from "./utils";
 
 /**
- * Logic thao tác bảng cho context menu. TipTap có sẵn insert/delete row-col,
- * merge/split, set cell attr. Cut/Copy/Paste row-col và Sort KHÔNG có sẵn nên
- * tự cài bằng ProseMirror transaction qua TableMap.
+ * Table manipulation logic for the context menu. TipTap provides insert/delete
+ * for rows and columns, merge/split, and setting cell attributes. Cut/Copy/Paste
+ * for rows and columns and Sort are NOT built in, so they are implemented here
+ * using ProseMirror transactions via TableMap.
  */
 
-// ── Clipboard cho row/column (module-level, sống suốt phiên editor) ──────────
+// ── Clipboard for row/column (module-level, persists for the whole editor session) ──────────
 let rowClipboard: PMNode[] | null = null;
 let colClipboard: PMNode[] | null = null;
 
@@ -33,7 +34,7 @@ export function useTableActions(editor: Editor) {
     if (!ctx) return;
     const { tr } = editor.state;
     const { table, tableStart, rect } = ctx;
-    // Vị trí chèn: trước hàng top, hoặc sau hàng bottom
+    // Insert position: before the top row, or after the bottom row
     let insertPos = tableStart;
     const targetRow = where === "before" ? rect.top : rect.bottom;
     for (let r = 0; r < targetRow; r++) insertPos += table.child(r).nodeSize;
@@ -64,7 +65,7 @@ export function useTableActions(editor: Editor) {
     const { table, map, tableStart, rect } = ctx;
     const targetCol = where === "before" ? rect.left : rect.right;
     const tr = editor.state.tr;
-    // Chèn từng cell vào mỗi hàng tại đúng cột; xử lý từ cuối lên để pos không lệch
+    // Insert each cell into every row at the correct column; process from the bottom up so positions don't shift
     for (let row = map.height - 1; row >= 0; row--) {
       const cellRel =
         targetCol < map.width
@@ -81,13 +82,13 @@ export function useTableActions(editor: Editor) {
     editor.view.focus();
   };
 
-  // ── Sort theo cột chỉ định (mặc định: cột của ô đang chọn) ───────────────────
+  // ── Sort by the specified column (default: the column of the selected cell) ───────────────────
   const sortByColumn = (dir: "asc" | "desc", column?: number) => {
     const ctx = tableContext(editor);
     if (!ctx) return;
     const { table, map, tableStart, rect } = ctx;
     const col = column ?? rect.left;
-    // Bỏ qua hàng header (hàng 0 nếu là header) khi sắp xếp
+    // Skip the header row (row 0 if it's a header) when sorting
     const firstRowIsHeader = isHeaderRow(table, 0);
     const startRow = firstRowIsHeader ? 1 : 0;
 
@@ -107,7 +108,7 @@ export function useTableActions(editor: Editor) {
         : collator.compare(b.key, a.key),
     );
 
-    // Ghép lại: header (nếu có) + các hàng đã sort
+    // Reassemble: header (if any) + the sorted rows
     const newRows: PMNode[] = [];
     if (firstRowIsHeader) newRows.push(table.child(0));
     newRows.push(...rows.map((r) => r.node));

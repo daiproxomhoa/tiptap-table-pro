@@ -4,9 +4,9 @@
  * and `<FormattedMessage defaultMessage="..." />`) intact so no component code
  * had to change when this package was extracted.
  *
- * By default it renders the `defaultMessage` (Vietnamese) verbatim. Consumers
- * that want to localize can wrap the editor in <TableIntlProvider messages={{...}}>
- * and provide overrides keyed by the message `id`.
+ * By default it renders the `defaultMessage` (English) verbatim. Consumers that
+ * want to localize can wrap the editor in <TableIntlProvider messages={{...}}>
+ * and provide overrides keyed by the readable message `id` (e.g. "insertTable").
  */
 import { createContext, useContext, type ReactNode } from "react";
 

@@ -10,6 +10,7 @@ import {
 } from "../utils";
 import { HANDLES } from "./constants";
 import { applyStoredStyles, tableMinContentWidth } from "./utils";
+import { cn } from "../../../lib/utils";
 import {
   clampDragWidth,
   clampDragHeight,
@@ -21,11 +22,14 @@ import {
 
 interface TableResizeHandleProps {
   editor: Editor;
+  /** Extra class names merged onto each corner/edge drag handle. */
+  className?: string;
 }
 
-/** Box của table THẬT tính theo hệ toạ độ của wrapper (portal target). Table có
- * thể tràn wrapper khi content ép cột giãn → outline + handle phải neo theo box
- * này, không theo mép wrapper (right:0/bottom:0 cũ làm khung lệch). */
+/** The REAL table's box measured in the wrapper's coordinate system (portal target). The
+ * table can overflow the wrapper when content forces columns to expand → the outline +
+ * handles must be anchored to this box, not to the wrapper's edges (the old
+ * right:0/bottom:0 made the frame misaligned). */
 interface Box {
   left: number;
   top: number;
@@ -33,16 +37,19 @@ interface Box {
   height: number;
 }
 
-export function TableResizeHandle({ editor }: TableResizeHandleProps) {
-  // Wrapper (.tableWrapper) của bảng đang focus — handle portal vào đây và định
-  // vị absolute theo BOX của table (bên trong wrapper), nên tự cuộn cùng bảng.
-  // State để render/portal; ref để đọc khi kéo (state là snapshot).
+export function TableResizeHandle({
+  editor,
+  className,
+}: TableResizeHandleProps) {
+  // The .tableWrapper of the focused table — the handle is portaled here and positioned
+  // absolutely relative to the table's BOX (inside the wrapper), so it scrolls with the
+  // table. State is for rendering/portal; ref is for reading during a drag (state is a snapshot).
   const [wrapperEl, setWrapperEl] = useState<HTMLElement | null>(null);
   const wrapperRef = useRef<HTMLElement | null>(null);
-  // Box table trong hệ wrapper — tính lại mỗi focus/update (content đổi kích
-  // thước table thì khung resize bám theo, không lệch).
+  // The table's box in the wrapper's coordinate system — recomputed on each focus/update
+  // (when content changes the table's size, the resize frame follows it without drifting).
   const [box, setBox] = useState<Box | null>(null);
-  // Badge hiển thị kích thước (%) khi đang kéo
+  // Badge showing the size (%) while dragging
   const [badge, setBadge] = useState<{
     x: number;
     y: number;
@@ -50,14 +57,15 @@ export function TableResizeHandle({ editor }: TableResizeHandleProps) {
   } | null>(null);
   const tableInner = useRef<HTMLElement | null>(null);
   const isDragging = useRef(false);
-  // Huỷ drag đang chạy (gỡ mousemove/mouseup) — gọi khi unmount giữa chừng.
+  // Abort an in-progress drag (remove mousemove/mouseup) — called when unmounting mid-drag.
   const abortDragRef = useRef<(() => void) | null>(null);
-  // "Table ảo": khung outline (w×h px) + lưới cột/hàng phủ lên bảng thật khi
-  // kéo, thay cho preview live. KHÔNG set style DOM thật khi kéo: <table> là
-  // NodeView (AlignableTableView) chạy normalizeColWidths mỗi update → ghi đè
-  // ngay; source of truth là node attr (commit khi thả). `cols`/`rows` = tỉ lệ
-  // 0..1 vị trí ranh cột/hàng (nhân với w/h khi vẽ). `left`/`top` = gốc box
-  // trong wrapper. null khi không kéo.
+  // "Ghost table": an outline frame (w×h px) + a column/row grid overlaid on the real
+  // table while dragging, in place of a live preview. Do NOT set real DOM styles while
+  // dragging: the <table> is a NodeView (AlignableTableView) that runs normalizeColWidths
+  // on every update → it would overwrite immediately; the source of truth is the node
+  // attrs (committed on release). `cols`/`rows` = the 0..1 ratio positions of the
+  // column/row boundaries (multiplied by w/h when drawing). `left`/`top` = the box origin
+  // within the wrapper. null when not dragging.
   const [ghost, setGhost] = useState<{
     left: number;
     top: number;
@@ -84,9 +92,10 @@ export function TableResizeHandle({ editor }: TableResizeHandleProps) {
   useEffect(() => {
     if (!inTable) return;
     let raf = 0;
-    // Đọc rect trong rAF → sau khi browser reflow (gõ text làm cột giãn thì box
-    // lấy kích thước MỚI, không trễ 1 nhịp). Mỗi selectionUpdate/update lên lịch
-    // đo lại → khung resize luôn bám table thật.
+    // Read the rect inside a rAF → after the browser reflows (typing text that expands a
+    // column makes the box pick up the NEW size, without a one-frame lag). Each
+    // selectionUpdate/update schedules a re-measure → the resize frame always tracks the
+    // real table.
     const update = () => {
       if (isDragging.current) return;
       cancelAnimationFrame(raf);
@@ -94,13 +103,13 @@ export function TableResizeHandle({ editor }: TableResizeHandleProps) {
         const table = focusedTableEl(editor);
         if (!table) return;
         const w = (table.closest(".tableWrapper") ?? table) as HTMLElement;
-        // Containing block cho handle/outline absolute.
+        // Containing block for the absolutely positioned handle/outline.
         w.style.position = "relative";
         tableInner.current = table;
         wrapperRef.current = w;
         setWrapperEl(w);
-        // Box = table rect trừ wrapper rect → toạ độ table trong wrapper. Bám
-        // mép table thật kể cả khi table tràn wrapper.
+        // Box = table rect minus wrapper rect → the table's coordinates within the
+        // wrapper. Tracks the real table edges even when the table overflows the wrapper.
         const wr = w.getBoundingClientRect();
         const tr = table.getBoundingClientRect();
         setBox({
@@ -118,7 +127,7 @@ export function TableResizeHandle({ editor }: TableResizeHandleProps) {
       cancelAnimationFrame(raf);
       editor.off("selectionUpdate", update);
       editor.off("update", update);
-      abortDragRef.current?.(); // huỷ drag còn treo nếu unmount giữa chừng
+      abortDragRef.current?.(); // abort a pending drag if unmounting mid-drag
       wrapperRef.current = null;
       setWrapperEl(null);
       setBox(null);
@@ -133,8 +142,8 @@ export function TableResizeHandle({ editor }: TableResizeHandleProps) {
     cursor: string,
   ) => {
     e.preventDefault();
-    // Lưu selection để restore sau commit — thao tác kéo/commit có thể làm
-    // editor mất focus (selection ra ngoài table → handle biến mất).
+    // Save the selection to restore after commit — the drag/commit can make the editor
+    // lose focus (selection moves outside the table → the handle disappears).
     const savedFrom = editor.state.selection.from;
     e.stopPropagation();
     const wrapper = wrapperRef.current;
@@ -144,9 +153,9 @@ export function TableResizeHandle({ editor }: TableResizeHandleProps) {
     const doWidth = mode !== "height";
     const doHeight = mode !== "width";
 
-    // Hàng CUỐI của bảng — mọi thao tác height (kéo mép/góc) đổi chiều cao hàng
-    // này (height per-row; không còn height cả bảng). Lấy phần tử cuối của danh
-    // sách <tr> (không dựa :last-child selector cho chắc).
+    // The table's LAST ROW — every height operation (dragging an edge/corner) changes this
+    // row's height (height per-row; no longer a whole-table height). Take the last element
+    // of the <tr> list (not relying on the :last-child selector, to be safe).
     const allRows = Array.from(
       table.querySelectorAll(":scope > tbody > tr, :scope > tr"),
     ) as HTMLElement[];
@@ -155,7 +164,7 @@ export function TableResizeHandle({ editor }: TableResizeHandleProps) {
     isDragging.current = true;
     setBodyStyle(cursor, "none");
 
-    // Kích thước bắt đầu = box table THẬT (không phải wrapper).
+    // Starting size = the REAL table's box (not the wrapper's).
     const tr0 = table.getBoundingClientRect();
     const wr0 = wrapper.getBoundingClientRect();
     const startW = tr0.width;
@@ -165,15 +174,16 @@ export function TableResizeHandle({ editor }: TableResizeHandleProps) {
     const startMouseX = e.clientX;
     const startMouseY = e.clientY;
 
-    // Min width = tổng min-content THẬT của từng cột (đo bằng cách gỡ ràng buộc
-    // width tạm thời — xem tableMinContentWidth).
+    // Min width = the sum of each column's REAL min-content (measured by temporarily
+    // removing the width constraints — see tableMinContentWidth).
     const minW = tableMinContentWidth(table);
 
-    // Bề rộng px render của từng <col> (1 <col> = 1 column, khớp index mà
-    // setColumnWidths dùng — không lệch colspan như đo theo cell). Commit chỉ cần
-    // TỈ LỆ giữa các cột: colwidth ghi vào node rồi normalizeColWidths convert
-    // px→% mỗi update, nên giữ đúng tỉ lệ là cột co giãn đều theo width bảng.
-    // Fallback header cells khi bảng chưa có <colgroup> (trước seedColwidths).
+    // The rendered px width of each <col> (1 <col> = 1 column, matching the index that
+    // setColumnWidths uses — no colspan mismatch like measuring by cell). The commit only
+    // needs the RATIO between columns: colwidth is written into the node then
+    // normalizeColWidths converts px→% on every update, so keeping the ratio right makes
+    // the columns scale evenly with the table width. Fall back to header cells when the
+    // table has no <colgroup> yet (before seedColwidths).
     const colEls = doWidth
       ? (() => {
           const cols = Array.from(
@@ -189,15 +199,16 @@ export function TableResizeHandle({ editor }: TableResizeHandleProps) {
     const startColPx = colEls.map((c) => c.getBoundingClientRect().width);
     const sumColPx = startColPx.reduce((a, b) => a + b, 0);
 
-    const minRowH = 34; // sàn chiều cao 1 hàng
+    const minRowH = 34; // floor height for a single row
     const startRowH = lastRow ? lastRow.getBoundingClientRect().height : 0;
-    // Chiều cao TỐI THIỂU của cả bảng khi co hàng cuối về min.
+    // The MINIMUM height of the whole table when the last row shrinks to its min.
     const minTableH = minTableHeight(startH, startRowH, minRowH);
 
-    // Lưới trong table ảo:
-    // - CỘT: tỉ lệ 0..1 (scale theo width — kéo rộng thì cột giãn đều).
-    // - HÀNG: px TUYỆT ĐỐI (ranh dưới mỗi hàng, trừ hàng cuối). Chỉ hàng cuối
-    //   đổi height khi kéo → các ranh hàng trên GIỮ NGUYÊN px, không scale theo h.
+    // Grid inside the ghost table:
+    // - COLUMNS: 0..1 ratios (scale with width — dragging wider expands columns evenly).
+    // - ROWS: ABSOLUTE px (the bottom boundary of each row, except the last). Only the
+    //   last row changes height when dragging → the upper row boundaries KEEP their px,
+    //   they don't scale with h.
     const tableLeft = tr0.left;
     const tableTop = tr0.top;
     const headerCells = allRows[0]
@@ -209,17 +220,18 @@ export function TableResizeHandle({ editor }: TableResizeHandleProps) {
             .map((c) => (c.getBoundingClientRect().right - tableLeft) / startW)
             .filter((rt) => rt > 0 && rt < 0.999)
         : [];
-    // Ranh dưới các hàng TRÊN hàng cuối (px). Bỏ hàng cuối (= đáy khung).
+    // The bottom boundaries of the rows ABOVE the last row (px). Exclude the last row (= the frame's bottom).
     const rowLinesPx = allRows
       .slice(0, -1)
       .map((rw) => rw.getBoundingClientRect().bottom - tableTop);
 
-    // Kích thước "table ảo" đang kéo — chỉ vẽ khung outline, KHÔNG set style DOM
-    // thật (bị normalizeColWidths của TableView ghi đè). Commit vào node khi thả.
+    // The size of the "ghost table" being dragged — only draws the outline frame, does NOT
+    // set real DOM styles (they'd be overwritten by TableView's normalizeColWidths).
+    // Commit into the node on release.
     let pendingW = startW;
     let pendingH = startH;
 
-    // Trần width = bề rộng container (100%). Không cho kéo bảng rộng quá container.
+    // Width ceiling = the container width (100%). Don't let the table be dragged wider than the container.
     const maxW = wrapper.parentElement?.clientWidth ?? Infinity;
 
     const onMouseMove = (ev: MouseEvent) => {
@@ -240,8 +252,8 @@ export function TableResizeHandle({ editor }: TableResizeHandleProps) {
           minTableH,
         );
       }
-      // Gốc box: kéo từ mép trái (sx=-1) thì mép phải đứng yên → left dịch theo
-      // chênh lệch width; kéo mép trên (sy=-1) tương tự cho top.
+      // Box origin: dragging from the left edge (sx=-1) keeps the right edge fixed → left
+      // shifts by the width difference; dragging the top edge (sy=-1) is similar for top.
       const left = sx < 0 ? boxLeft - (pendingW - startW) : boxLeft;
       const top = sy < 0 ? boxTop - (pendingH - startH) : boxTop;
       setGhost({
@@ -253,7 +265,7 @@ export function TableResizeHandle({ editor }: TableResizeHandleProps) {
         rows: rowLinesPx,
       });
 
-      // Badge: width theo % container (khớp giá trị commit), height theo px.
+      // Badge: width as % of the container (matching the committed value), height in px.
       const container = wrapper.parentElement?.clientWidth ?? 0;
       const wText =
         container > 0
@@ -274,8 +286,9 @@ export function TableResizeHandle({ editor }: TableResizeHandleProps) {
       setBadge({ x, y: ev.clientY + 14, text });
     };
 
-    // Gỡ đúng listener đã add (mỗi addEventListener ↔ một removeEventListener),
-    // reset cursor + cờ drag. Dùng chung cho thả chuột và unmount giữa drag.
+    // Remove exactly the listeners that were added (each addEventListener ↔ one
+    // removeEventListener), reset cursor + drag flag. Shared by mouse release and
+    // unmounting mid-drag.
     const cleanup = () => {
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
@@ -289,14 +302,14 @@ export function TableResizeHandle({ editor }: TableResizeHandleProps) {
       setBadge(null);
       setGhost(null);
 
-      // Width commit — 2 nguồn, mỗi nguồn 1 vai trò khác nhau:
-      //  1. wrapper.style.width + table attr `style: width:%` = width THẬT của
-      //     bảng (attr để persist khi export HTML; applyStoredStyles set lại lên
-      //     wrapper khi load). AlignableTableView ép table.style.width=100% nên
-      //     wrapper mới là chỗ giữ %.
-      //  2. colwidth (px) = chỉ để giữ TỈ LỆ cột; normalizeColWidths convert
-      //     px→% mỗi update. Floor ≥1 để không cột nào về 0 (0 làm normalize bail
-      //     → cả bảng kẹt px cũ).
+      // Width commit — 2 sources, each with a different role:
+      //  1. wrapper.style.width + the table attr `style: width:%` = the table's REAL width
+      //     (the attr persists on HTML export; applyStoredStyles re-applies it to the
+      //     wrapper on load). AlignableTableView forces table.style.width=100%, so the
+      //     wrapper is where the % is held.
+      //  2. colwidth (px) = only to keep the column RATIO; normalizeColWidths converts
+      //     px→% on every update. Floor ≥1 so no column drops to 0 (0 makes normalize bail
+      //     → the whole table stays stuck at the old px).
       if (doWidth) {
         const container = wrapper.parentElement?.clientWidth ?? 0;
         const widthVal = widthValue(pendingW, container);
@@ -310,30 +323,32 @@ export function TableResizeHandle({ editor }: TableResizeHandleProps) {
         if (scaled) setColumnWidths(editor, scaled);
       }
 
-      // Height → cộng phần thay đổi vào hàng cuối, commit vào row node (-1).
+      // Height → add the change to the last row, commit into the row node (-1).
       if (doHeight && lastRow) {
         const finalRowH = finalRowHeight(startRowH, pendingH, startH, minRowH);
         setRowHeight(editor, -1, `${finalRowH}px`);
       }
 
-      // Restore focus + selection về chỗ cũ (trong bảng) để handle không biến
-      // mất sau khi kéo. clamp phòng doc đổi kích thước.
+      // Restore focus + selection to its old spot (inside the table) so the handle doesn't
+      // disappear after the drag. Clamp in case the doc changed size.
       const pos = Math.min(savedFrom, editor.state.doc.content.size);
       editor.chain().focus().setTextSelection(pos).run();
     };
 
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
-    // Unmount giữa drag → cleanup (gỡ listener, không commit vì selection đã mất).
+    // Unmount mid-drag → cleanup (remove listeners, don't commit since the selection is gone).
     abortDragRef.current = cleanup;
   };
 
   if (!inTable || !wrapperEl || !box) return null;
 
-  // Ô vuông xanh đặc ở mỗi mép/góc (giống TinyMCE), không icon.
-  const handleClass =
-    "absolute size-2.5 rounded-[2px] bg-primary border border-background shadow-sm";
-  // Vị trí handle theo cạnh của box (left/top px trong wrapper).
+  // A solid blue square at each edge/corner (like TinyMCE), no icon.
+  const handleClass = cn(
+    "ttp-table-resize-handle absolute size-2.5 rounded-[2px] bg-primary border border-background shadow-sm",
+    className,
+  );
+  // Handle positions along the box edges (left/top px within the wrapper).
   const cxPos = {
     l: box.left,
     c: box.left + box.width / 2,
@@ -356,7 +371,7 @@ export function TableResizeHandle({ editor }: TableResizeHandleProps) {
             zIndex: 60,
             pointerEvents: "none",
           }}
-          className="rounded bg-primary px-1.5 py-0.5 text-xs font-medium text-primary-foreground shadow"
+          className="ttp-table-resize-handle__badge rounded bg-primary px-1.5 py-0.5 text-xs font-medium text-primary-foreground shadow"
         >
           {badge.text}
         </div>
@@ -364,9 +379,9 @@ export function TableResizeHandle({ editor }: TableResizeHandleProps) {
 
       {createPortal(
         <>
-          {/* Outline bao bảng đang chọn — neo theo box table thật. */}
+          {/* Outline around the selected table — anchored to the real table box. */}
           <div
-            className="pointer-events-none absolute z-20 border-2 border-primary"
+            className="ttp-table-resize-handle__outline pointer-events-none absolute z-20 border-2 border-primary"
             style={{
               left: box.left,
               top: box.top,
@@ -389,9 +404,9 @@ export function TableResizeHandle({ editor }: TableResizeHandleProps) {
             />
           ))}
           {ghost && (
-            // Table ảo: khung outline w×h + lưới cột/hàng, phủ lên bảng thật.
+            // Ghost table: an outline frame w×h + a column/row grid, overlaid on the real table.
             <div
-              className="pointer-events-none absolute z-30 border-2 border-blue-500 bg-blue-500/5"
+              className="ttp-table-resize-handle__ghost pointer-events-none absolute z-30 border-2 border-blue-500 bg-blue-500/5"
               style={{
                 left: ghost.left,
                 top: ghost.top,

@@ -6,7 +6,7 @@ import {
   AlignLeft,
   AlignCenter,
   AlignRight,
-} from "lucide-react";
+} from "../../../lib/icons";
 import {
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -24,7 +24,7 @@ interface CellSubmenuProps {
   onProperties: () => void;
 }
 
-/** Submenu "Ô": thuộc tính ô (căn lề), merge/split. */
+/** "Cell" submenu: cell properties (alignment), merge/split. */
 export function CellSubmenu({
   actions,
   run,
@@ -36,35 +36,35 @@ export function CellSubmenu({
     <DropdownMenuSub>
       <DropdownMenuSubTrigger>
         <Columns2 className="mr-2 size-4" />
-        <FormattedMessage defaultMessage="Ô" id="wT3UNz" />
+        <FormattedMessage defaultMessage="Cell" id="cell" />
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent>
         <DropdownMenuItem onClick={() => run(onProperties)}>
-          <FormattedMessage defaultMessage="Thuộc tính ô (căn lề)" id="M8lKBW" />
+          <FormattedMessage defaultMessage="Cell properties (alignment)" id="cellPropertiesAlign" />
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => run(() => actions.setCellAlign("left"))}>
           <AlignLeft className="mr-2 size-4" />
-          <FormattedMessage defaultMessage="Căn trái" id="hnlnfK" />
+          <FormattedMessage defaultMessage="Align left" id="alignLeft" />
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => run(() => actions.setCellAlign("center"))}>
           <AlignCenter className="mr-2 size-4" />
-          <FormattedMessage defaultMessage="Căn giữa" id="GQDYpC" />
+          <FormattedMessage defaultMessage="Align center" id="alignCenter" />
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => run(() => actions.setCellAlign("right"))}>
           <AlignRight className="mr-2 size-4" />
-          <FormattedMessage defaultMessage="Căn phải" id="C7BB9/" />
+          <FormattedMessage defaultMessage="Align right" id="alignRight" />
         </DropdownMenuItem>
         {(canMerge || canSplit) && <DropdownMenuSeparator />}
         {canMerge && (
           <DropdownMenuItem onClick={() => run(actions.mergeCells)}>
             <Combine className="mr-2 size-4" />
-            <FormattedMessage defaultMessage="Merge các ô đã chọn" id="pd7oWl" />
+            <FormattedMessage defaultMessage="Merge selected cells" id="mergeCells" />
           </DropdownMenuItem>
         )}
         {canSplit && (
           <DropdownMenuItem onClick={() => run(actions.splitCell)}>
             <Split className="mr-2 size-4" />
-            <FormattedMessage defaultMessage="Split ô đã merge" id="KEMj8C" />
+            <FormattedMessage defaultMessage="Split merged cell" id="splitCell" />
           </DropdownMenuItem>
         )}
       </DropdownMenuSubContent>

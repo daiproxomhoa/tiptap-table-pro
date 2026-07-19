@@ -37,7 +37,7 @@ export function AdvancedTab({
           checked={borderless}
           onCheckedChange={(v) => setBorderless(!!v)}
         />
-        <FormattedMessage defaultMessage="Ẩn viền bảng" id="dE+o4h" />
+        <FormattedMessage defaultMessage="Hide table borders" id="hideTableBorders" />
       </label>
 
       <div
@@ -48,8 +48,7 @@ export function AdvancedTab({
       >
         <FieldLabel
           label={intl.formatMessage({
-            defaultMessage: "Độ dày viền",
-            id: '6pR4+b',
+            defaultMessage: "Border width", id: "borderWidth",
           })}
         >
           <Input
@@ -61,8 +60,7 @@ export function AdvancedTab({
 
         <FieldLabel
           label={intl.formatMessage({
-            defaultMessage: "Kiểu viền",
-            id: 'nHzidS',
+            defaultMessage: "Border style", id: "borderStyle",
           })}
         >
           <BorderStyleSelect value={borderStyle} onChange={setBorderStyle} />
@@ -71,8 +69,7 @@ export function AdvancedTab({
 
       <FieldLabel
         label={intl.formatMessage({
-          defaultMessage: "Màu viền",
-          id: "a3ZhX3",
+          defaultMessage: "Border color", id: "borderColor",
         })}
       >
         <div
@@ -127,7 +124,7 @@ export function AdvancedTab({
                 size="sm"
                 onClick={() => setBorderColor("")}
               >
-                <FormattedMessage defaultMessage="Mặc định" id="kQYjdX" />
+                <FormattedMessage defaultMessage="Default" id="default" />
               </Button>
             )}
           </div>

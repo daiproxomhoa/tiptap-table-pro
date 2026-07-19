@@ -6,7 +6,7 @@ import {
   ArrowLeftToLine,
   ArrowRightToLine,
   SquareMinus,
-} from "lucide-react";
+} from "../../../lib/icons";
 import { Toggle } from "../../primitives/toggle";
 import { Separator } from "../../primitives/separator";
 import { Tip } from "./Tip";
@@ -15,11 +15,10 @@ export function RowColumnControls({ editor }: { editor: Editor }) {
   const intl = useIntl();
   return (
     <>
-      {/* Hàng */}
+      {/* Rows */}
       <Tip
         label={intl.formatMessage({
-          defaultMessage: "Thêm hàng phía trên",
-          id: "72ns8b",
+          defaultMessage: "Insert row above", id: "insertRowAbove",
         })}
       >
         <Toggle
@@ -32,8 +31,7 @@ export function RowColumnControls({ editor }: { editor: Editor }) {
       </Tip>
       <Tip
         label={intl.formatMessage({
-          defaultMessage: "Thêm hàng phía dưới",
-          id: "08BSnP",
+          defaultMessage: "Insert row below", id: "insertRowBelow",
         })}
       >
         <Toggle
@@ -46,8 +44,7 @@ export function RowColumnControls({ editor }: { editor: Editor }) {
       </Tip>
       <Tip
         label={intl.formatMessage({
-          defaultMessage: "Xoá hàng",
-          id: "r42PHI",
+          defaultMessage: "Delete row", id: "deleteRow",
         })}
       >
         <Toggle
@@ -61,11 +58,10 @@ export function RowColumnControls({ editor }: { editor: Editor }) {
 
       <Separator orientation="vertical" className="mx-0.5 h-5" />
 
-      {/* Cột */}
+      {/* Columns */}
       <Tip
         label={intl.formatMessage({
-          defaultMessage: "Thêm cột bên trái",
-          id: "PKMfyo",
+          defaultMessage: "Insert column left", id: "insertColumnLeft",
         })}
       >
         <Toggle
@@ -78,8 +74,7 @@ export function RowColumnControls({ editor }: { editor: Editor }) {
       </Tip>
       <Tip
         label={intl.formatMessage({
-          defaultMessage: "Thêm cột bên phải",
-          id: "Wld4nM",
+          defaultMessage: "Insert column right", id: "insertColumnRight",
         })}
       >
         <Toggle
@@ -92,8 +87,7 @@ export function RowColumnControls({ editor }: { editor: Editor }) {
       </Tip>
       <Tip
         label={intl.formatMessage({
-          defaultMessage: "Xoá cột",
-          id: "xJ7qqT",
+          defaultMessage: "Delete column", id: "deleteColumn",
         })}
       >
         <Toggle

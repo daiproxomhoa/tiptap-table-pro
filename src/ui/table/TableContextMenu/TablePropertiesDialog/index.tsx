@@ -25,7 +25,7 @@ interface TablePropertiesDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-/** Đọc width/height từ style attr "width: ...; height: ..." của table. */
+/** Read width/height from the table's style attribute "width: ...; height: ...". */
 function parseStyle(style: string | null): { width: string; height: string } {
   const w = style?.match(/width:\s*([^;]+)/)?.[1]?.trim() ?? "";
   const h = style?.match(/height:\s*([^;]+)/)?.[1]?.trim() ?? "";
@@ -39,7 +39,7 @@ export function TablePropertiesDialog({
 }: TablePropertiesDialogProps) {
   const attrs = editor.getAttributes("table");
   const initial = parseStyle(attrs.style ?? null);
-  // Viền là attr của từng ô; đọc ô đầu tiên làm trạng thái khởi tạo.
+  // The border is a per-cell attribute; read the first cell as the initial state.
   const cellBorder = firstCellBorderColor(editor);
 
   const [tab, setTab] = useState<DialogTab>("general");
@@ -81,7 +81,7 @@ export function TablePropertiesDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            <FormattedMessage defaultMessage="Thuộc tính bảng" id="ifjk7x" />
+            <FormattedMessage defaultMessage="Table properties" id="tableProperties" />
           </DialogTitle>
         </DialogHeader>
 
@@ -119,10 +119,10 @@ export function TablePropertiesDialog({
             className="min-w-25"
             onClick={() => onOpenChange(false)}
           >
-            <FormattedMessage defaultMessage="Huỷ" id="NfX0sh" />
+            <FormattedMessage defaultMessage="Cancel" id="cancel" />
           </Button>
           <Button className="min-w-25" onClick={save}>
-            <FormattedMessage defaultMessage="Lưu" id="oa/wrx" />
+            <FormattedMessage defaultMessage="Save" id="save" />
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
+import { X } from "../../lib/icons";
 
 import { cn } from "../../lib/utils";
 
@@ -32,7 +32,7 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
-    /** Ẩn nút X góc phải (vd. fullscreen editor có toolbar riêng che chỗ đó). */
+    /** Hide the X button in the top-right corner (e.g. a fullscreen editor whose own toolbar covers that spot). */
     hideClose?: boolean;
   }
 >(({ className, children, hideClose, onEscapeKeyDown, ...props }, ref) => (
@@ -42,9 +42,9 @@ const DialogContent = React.forwardRef<
       ref={ref}
       onEscapeKeyDown={(e) => {
         onEscapeKeyDown?.(e);
-        // Editor compact dùng Esc để bật/tắt bubble menu (đánh dấu bằng
-        // [data-esc-bubble]). Khi focus đang trong đó, chặn Esc đóng dialog để
-        // editor nhận Esc — nếu không Radix (capture-phase) sẽ đóng trước.
+        // The compact editor uses Esc to toggle the bubble menu (marked with
+        // [data-esc-bubble]). When focus is inside it, prevent Esc from closing the dialog so the
+        // editor receives Esc — otherwise Radix (in the capture phase) would close it first.
         if (document.activeElement?.closest("[data-esc-bubble]"))
           e.preventDefault();
       }}

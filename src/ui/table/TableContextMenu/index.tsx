@@ -1,8 +1,9 @@
 import { useState } from "react";
 import type { Editor } from "@tiptap/react";
 import type { ReactNode } from "react";
+import { cn } from "../../../lib/utils";
 import { FormattedMessage } from "../../../lib/intl";
-import { Link, Paintbrush, Settings, Trash2 } from "lucide-react";
+import { Link, Paintbrush, Settings, Trash2 } from "../../../lib/icons";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,9 +28,18 @@ import { LinkDialog } from "../../LinkDialog";
 interface TableContextMenuProps {
   editor: Editor;
   children: ReactNode;
+  /** Extra class names merged onto the popup menu content. */
+  className?: string;
+  /** Custom swatch colors for the cell background submenu. */
+  cellColors?: string[];
 }
 
-export function TableContextMenu({ editor, children }: TableContextMenuProps) {
+export function TableContextMenu({
+  editor,
+  children,
+  className,
+  cellColors,
+}: TableContextMenuProps) {
   const [menuPos, setMenuPos] = useState<{ x: number; y: number } | null>(null);
   const [propsOpen, setPropsOpen] = useState(false);
   const [cellPropsOpen, setCellPropsOpen] = useState(false);
@@ -40,8 +50,8 @@ export function TableContextMenu({ editor, children }: TableContextMenuProps) {
   const handleContextMenu = (e: React.MouseEvent) => {
     if (!editor.isActive("table")) return;
     e.preventDefault();
-    // Đưa con trỏ về ô dưới chuột phải để thao tác đúng ô đó (không phải ô đang focus).
-    // Giữ nguyên khi đang chọn nhiều ô (cho Merge) hoặc đang bôi đen text (cho Link).
+    // Move the cursor to the cell under the right-click so actions apply to that cell (not the focused one).
+    // Leave it unchanged when multiple cells are selected (for Merge) or text is highlighted (for Link).
     const multiSelect =
       editor.view.dom.querySelectorAll(".selectedCell").length > 1;
     const hasTextSelection = !editor.state.selection.empty;
@@ -59,7 +69,7 @@ export function TableContextMenu({ editor, children }: TableContextMenuProps) {
   };
 
 
-  // Merge: đang chọn >1 ô. Split: ô hiện tại đã merge (colspan/rowspan > 1).
+  // Merge: more than one cell is selected. Split: the current cell is already merged (colspan/rowspan > 1).
   const canMerge = editor.view.dom.querySelectorAll(".selectedCell").length > 1;
   const cellAttrs = {
     ...editor.getAttributes("tableCell"),
@@ -68,10 +78,13 @@ export function TableContextMenu({ editor, children }: TableContextMenuProps) {
   const canSplit = (cellAttrs.colspan ?? 1) > 1 || (cellAttrs.rowspan ?? 1) > 1;
 
   return (
-    <div onContextMenu={handleContextMenu} className="contents">
+    <div
+      onContextMenu={handleContextMenu}
+      className="ttp-context-menu__trigger contents"
+    >
       {children}
 
-      {/* key theo toạ độ → remount khi nhấn chỗ khác để Radix đo lại anchor */}
+      {/* key based on coordinates → remount when clicking elsewhere so Radix re-measures the anchor */}
       <DropdownMenu
         key={menuPos ? `${menuPos.x},${menuPos.y}` : "closed"}
         open={!!menuPos}
@@ -91,12 +104,12 @@ export function TableContextMenu({ editor, children }: TableContextMenuProps) {
         </DropdownMenuTrigger>
 
         <DropdownMenuContent
-          className="w-56"
+          className={cn("ttp-context-menu w-56", className)}
           onCloseAutoFocus={(e) => e.preventDefault()}
         >
           <DropdownMenuItem onClick={() => run(() => setLinkOpen(true))}>
             <Link className="mr-2 size-4" />
-            <FormattedMessage defaultMessage="Liên kết…" id="0hwSCX" />
+            <FormattedMessage defaultMessage="Link…" id="link" />
           </DropdownMenuItem>
 
           <DropdownMenuSeparator />
@@ -118,20 +131,24 @@ export function TableContextMenu({ editor, children }: TableContextMenuProps) {
 
           <DropdownMenuSeparator />
 
-          {/* Màu nền ô — submenu */}
+          {/* Cell background color — submenu */}
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
               <Paintbrush className="mr-2 size-4" />
-              <FormattedMessage defaultMessage="Màu nền ô" id="aj69qU" />
+              <FormattedMessage defaultMessage="Cell background" id="cellBackground" />
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent className="p-0">
-              <TableCellColorPicker editor={editor} onClose={close} />
+              <TableCellColorPicker
+                editor={editor}
+                onClose={close}
+                presetColors={cellColors}
+              />
             </DropdownMenuSubContent>
           </DropdownMenuSub>
 
           <DropdownMenuItem onClick={() => run(() => setPropsOpen(true))}>
             <Settings className="mr-2 size-4" />
-            <FormattedMessage defaultMessage="Thuộc tính bảng" id="ifjk7x" />
+            <FormattedMessage defaultMessage="Table properties" id="tableProperties" />
           </DropdownMenuItem>
 
           <DropdownMenuSeparator />
@@ -141,7 +158,7 @@ export function TableContextMenu({ editor, children }: TableContextMenuProps) {
             className="text-destructive focus:text-destructive"
           >
             <Trash2 className="mr-2 size-4" />
-            <FormattedMessage defaultMessage="Xoá toàn bộ bảng" id="ofjOjA" />
+            <FormattedMessage defaultMessage="Delete entire table" id="deleteEntireTable" />
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -7,7 +7,7 @@ import {
   ClipboardPaste,
   Trash2,
   Columns3,
-} from "lucide-react";
+} from "../../../lib/icons";
 import {
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -22,55 +22,55 @@ interface ColumnSubmenuProps {
   run: (fn: () => void) => void;
 }
 
-/** Submenu "Cột": thêm/xoá/cut/copy/paste cột. */
+/** "Column" submenu: add/delete/cut/copy/paste columns. */
 export function ColumnSubmenu({ actions, run }: ColumnSubmenuProps) {
   const canPaste = actions.canPasteColumn();
   return (
     <DropdownMenuSub>
       <DropdownMenuSubTrigger>
         <Columns3 className="mr-2 size-4" />
-        <FormattedMessage defaultMessage="Cột" id="9JDnfL" />
+        <FormattedMessage defaultMessage="Column" id="column" />
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent>
         <DropdownMenuItem onClick={() => run(actions.addColumnBefore)}>
           <ArrowLeftToLine className="mr-2 size-4" />
-          <FormattedMessage defaultMessage="Thêm cột bên trái" id="PKMfyo" />
+          <FormattedMessage defaultMessage="Insert column left" id="insertColumnLeft" />
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => run(actions.addColumnAfter)}>
           <ArrowRightToLine className="mr-2 size-4" />
-          <FormattedMessage defaultMessage="Thêm cột bên phải" id="Wld4nM" />
+          <FormattedMessage defaultMessage="Insert column right" id="insertColumnRight" />
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => run(actions.deleteColumn)}
           className="text-destructive focus:text-destructive"
         >
           <Trash2 className="mr-2 size-4" />
-          <FormattedMessage defaultMessage="Xoá cột hiện tại" id="nmjWQ+" />
+          <FormattedMessage defaultMessage="Delete current column" id="deleteCurrentColumn" />
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
 
         <DropdownMenuItem onClick={() => run(actions.cutColumn)}>
           <Scissors className="mr-2 size-4" />
-          <FormattedMessage defaultMessage="Cắt cột" id="wiUPb4" />
+          <FormattedMessage defaultMessage="Cut column" id="cutColumn" />
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => run(actions.copyColumn)}>
           <Copy className="mr-2 size-4" />
-          <FormattedMessage defaultMessage="Sao chép cột" id="P5Oapb" />
+          <FormattedMessage defaultMessage="Copy column" id="copyColumn" />
         </DropdownMenuItem>
         <DropdownMenuItem
           disabled={!canPaste}
           onClick={() => run(actions.pasteColumnBefore)}
         >
           <ClipboardPaste className="mr-2 size-4" />
-          <FormattedMessage defaultMessage="Dán cột bên trái" id="J1uCc3" />
+          <FormattedMessage defaultMessage="Paste column left" id="pasteColumnLeft" />
         </DropdownMenuItem>
         <DropdownMenuItem
           disabled={!canPaste}
           onClick={() => run(actions.pasteColumnAfter)}
         >
           <ClipboardPaste className="mr-2 size-4" />
-          <FormattedMessage defaultMessage="Dán cột bên phải" id="D40ZCt" />
+          <FormattedMessage defaultMessage="Paste column right" id="pasteColumnRight" />
         </DropdownMenuItem>
       </DropdownMenuSubContent>
     </DropdownMenuSub>

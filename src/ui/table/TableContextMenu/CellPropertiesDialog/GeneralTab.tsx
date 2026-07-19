@@ -40,8 +40,7 @@ export function GeneralTab({
     <>
       <FieldLabel
         label={intl.formatMessage({
-          defaultMessage: "Loại ô",
-          id: 'TtII9e',
+          defaultMessage: "Cell type", id: "cellType",
         })}
       >
         <Select value={cellType} onValueChange={setCellType}>
@@ -51,13 +50,12 @@ export function GeneralTab({
           <SelectContent>
             {opt(
               "cell",
-              intl.formatMessage({ defaultMessage: "Ô", id: "wT3UNz" }),
+              intl.formatMessage({ defaultMessage: "Cell", id: "cell" }),
             )}
             {opt(
               "header",
               intl.formatMessage({
-                defaultMessage: "Ô tiêu đề",
-                id: 'Y7qu09',
+                defaultMessage: "Header cell", id: "headerCell",
               }),
             )}
           </SelectContent>
@@ -66,8 +64,7 @@ export function GeneralTab({
 
       <FieldLabel
         label={intl.formatMessage({
-          defaultMessage: "Phạm vi",
-          id: 'zaXP54',
+          defaultMessage: "Scope", id: "scope",
         })}
       >
         <Select value={scope} onValueChange={setScope}>
@@ -78,20 +75,18 @@ export function GeneralTab({
             {opt(
               NONE,
               intl.formatMessage({
-                defaultMessage: "Không",
-                id: 'JVtIrS',
+                defaultMessage: "None", id: "none",
               }),
             )}
-            {opt("row", intl.formatMessage({ defaultMessage: "Hàng", id: 'YwJzyx' }))}
-            {opt("col", intl.formatMessage({ defaultMessage: "Cột", id: '9JDnfL' }))}
+            {opt("row", intl.formatMessage({ defaultMessage: "Row", id: "row" }))}
+            {opt("col", intl.formatMessage({ defaultMessage: "Column", id: "column" }))}
           </SelectContent>
         </Select>
       </FieldLabel>
 
       <FieldLabel
         label={intl.formatMessage({
-          defaultMessage: "Căn ngang",
-          id: '1kezye',
+          defaultMessage: "Horizontal align", id: "horizontalAlign",
         })}
       >
         <Select value={hAlign} onValueChange={setHAlign}>
@@ -99,18 +94,17 @@ export function GeneralTab({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {opt(NONE, intl.formatMessage({ defaultMessage: "Không", id: 'JVtIrS' }))}
-            {opt("left", intl.formatMessage({ defaultMessage: "Trái", id: "vTehD7" }))}
-            {opt("center", intl.formatMessage({ defaultMessage: "Giữa", id: "rRGYkm" }))}
-            {opt("right", intl.formatMessage({ defaultMessage: "Phải", id: "r+CuAX" }))}
+            {opt(NONE, intl.formatMessage({ defaultMessage: "None", id: "none" }))}
+            {opt("left", intl.formatMessage({ defaultMessage: "Left", id: "left" }))}
+            {opt("center", intl.formatMessage({ defaultMessage: "Center", id: "center" }))}
+            {opt("right", intl.formatMessage({ defaultMessage: "Right", id: "right" }))}
           </SelectContent>
         </Select>
       </FieldLabel>
 
       <FieldLabel
         label={intl.formatMessage({
-          defaultMessage: "Căn dọc",
-          id: 'tLZRuf',
+          defaultMessage: "Vertical align", id: "verticalAlign",
         })}
       >
         <Select value={vAlign} onValueChange={setVAlign}>
@@ -118,10 +112,10 @@ export function GeneralTab({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {opt(NONE, intl.formatMessage({ defaultMessage: "Không", id: 'JVtIrS' }))}
-            {opt("top", intl.formatMessage({ defaultMessage: "Trên", id: 'izw8bX' }))}
-            {opt("middle", intl.formatMessage({ defaultMessage: "Giữa", id: "rRGYkm" }))}
-            {opt("bottom", intl.formatMessage({ defaultMessage: "Dưới", id: 'hHS1qu' }))}
+            {opt(NONE, intl.formatMessage({ defaultMessage: "None", id: "none" }))}
+            {opt("top", intl.formatMessage({ defaultMessage: "Top", id: "top" }))}
+            {opt("middle", intl.formatMessage({ defaultMessage: "Middle", id: "middle" }))}
+            {opt("bottom", intl.formatMessage({ defaultMessage: "Bottom", id: "bottom" }))}
           </SelectContent>
         </Select>
       </FieldLabel>

@@ -23,11 +23,11 @@ interface AdvancedSortDialogProps {
   editor: Editor;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Sắp xếp theo cột (0-based) + chiều. */
+  /** Sort by column (0-based) + direction. */
   onSort: (column: number, dir: "asc" | "desc") => void;
 }
 
-/** Danh sách cột của bảng đang focus; nhãn lấy từ ô header nếu có, không thì "Cột N". */
+/** List of columns of the focused table; the label comes from the header cell if present, otherwise "Column N". */
 function useColumns(editor: Editor): string[] {
   const attrs = editor.getAttributes("table");
   if (!attrs) return [];
@@ -39,7 +39,7 @@ function useColumns(editor: Editor): string[] {
     const map = TableMap.get(node);
     const cols: string[] = [];
     for (let c = 0; c < map.width; c++) {
-      const rel = map.map[c]; // hàng 0
+      const rel = map.map[c]; // row 0
       const cell = node.nodeAt(rel);
       const text = cell?.textContent.trim();
       cols.push(text || "");
@@ -79,13 +79,13 @@ export function AdvancedSortDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            <FormattedMessage defaultMessage="Sắp xếp nâng cao" id="U9Eexx" />
+            <FormattedMessage defaultMessage="Advanced sort" id="advancedSort" />
           </DialogTitle>
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-3 px-3 pb-3 sm:px-6 sm:pb-6">
           <FieldLabel
-            label={intl.formatMessage({ defaultMessage: "Cột", id: '9JDnfL' })}
+            label={intl.formatMessage({ defaultMessage: "Column", id: "column" })}
           >
             <Select value={col} onValueChange={setCol}>
               <SelectTrigger>
@@ -96,7 +96,7 @@ export function AdvancedSortDialog({
                   <SelectItem key={i} value={String(i)}>
                     {label ||
                       intl.formatMessage(
-                        { defaultMessage: "Cột {n}", id: 'gMVgER' },
+                        { defaultMessage: "Column {n}", id: "columnN" },
                         { n: i + 1 },
                       )}
                   </SelectItem>
@@ -105,7 +105,7 @@ export function AdvancedSortDialog({
             </Select>
           </FieldLabel>
           <FieldLabel
-            label={intl.formatMessage({ defaultMessage: "Thứ tự", id: 'D7ZvYU' })}
+            label={intl.formatMessage({ defaultMessage: "Order", id: "order" })}
           >
             <Select value={dir} onValueChange={(v) => setDir(v as "asc" | "desc")}>
               <SelectTrigger>
@@ -113,10 +113,10 @@ export function AdvancedSortDialog({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="asc">
-                  {intl.formatMessage({ defaultMessage: "Tăng dần", id: '2if0Gn' })}
+                  {intl.formatMessage({ defaultMessage: "Ascending", id: "ascending" })}
                 </SelectItem>
                 <SelectItem value="desc">
-                  {intl.formatMessage({ defaultMessage: "Giảm dần", id: '8Xjf10' })}
+                  {intl.formatMessage({ defaultMessage: "Descending", id: "descending" })}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -129,10 +129,10 @@ export function AdvancedSortDialog({
             className="min-w-25"
             onClick={() => onOpenChange(false)}
           >
-            <FormattedMessage defaultMessage="Huỷ" id="NfX0sh" />
+            <FormattedMessage defaultMessage="Cancel" id="cancel" />
           </Button>
           <Button className="min-w-25" onClick={submit}>
-            <FormattedMessage defaultMessage="Sắp xếp" id="/4Jcip" />
+            <FormattedMessage defaultMessage="Sort" id="sort" />
           </Button>
         </DialogFooter>
       </DialogContent>

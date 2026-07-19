@@ -12,14 +12,14 @@ export function applyStoredStyles(editor: Editor) {
 }
 
 /**
- * Bề rộng min-content THẬT của bảng = tổng min-content từng cột. Phép đo hiện
- * tại (wrapper=1px rồi đọc scrollWidth) sai vì colgroup đang mang `%` +
- * `table.style.width:100%` (normalizeColWidths) → `table-layout:auto` tính
- * min-content méo theo tỉ lệ %, không theo nội dung. Ở đây tạm gỡ colgroup
- * width + ép `table.style.width = min-content` (nếu chỉ clear width, bảng auto
- * sẽ GIÃN đầy wrapper → scrollWidth = full width chứ không phải min-content),
- * đọc `getBoundingClientRect().width`, rồi khôi phục nguyên trạng. Thuần DOM,
- * không đụng node/state.
+ * The table's REAL min-content width = the sum of each column's min-content. The current
+ * measurement (wrapper=1px then read scrollWidth) is wrong because the colgroup carries
+ * `%` + `table.style.width:100%` (normalizeColWidths) → `table-layout:auto` computes
+ * min-content skewed by the % ratio rather than by content. Here we temporarily remove
+ * the colgroup width + force `table.style.width = min-content` (if we only clear the
+ * width, the auto table EXPANDS to fill the wrapper → scrollWidth = full width, not
+ * min-content), read `getBoundingClientRect().width`, then restore everything. Pure DOM,
+ * no node/state changes.
  */
 export function tableMinContentWidth(table: HTMLElement): number {
   const cols = Array.from(
@@ -34,7 +34,7 @@ export function tableMinContentWidth(table: HTMLElement): number {
   table.style.minWidth = "0";
   table.style.width = "min-content";
   table.style.tableLayout = "auto";
-  // Đọc width ép reflow đồng bộ ngay tại đây.
+  // Reading the width forces a synchronous reflow right here.
   const min = Math.ceil(table.getBoundingClientRect().width);
 
   cols.forEach((c, i) => (c.style.width = prevCol[i]));

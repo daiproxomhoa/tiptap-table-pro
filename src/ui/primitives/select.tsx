@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
-import { Check, ChevronDown, ChevronUp } from "lucide-react"
+import { Check, ChevronDown, ChevronUp } from "../../lib/icons"
 
 import { cn } from "../../lib/utils"
 
@@ -15,7 +15,7 @@ const SelectValue = SelectPrimitive.Value
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> & {
-    /** Ẩn chevron — cho trigger hẹp (w-16) để icon không che value. */
+    /** Hide the chevron — for a narrow trigger (w-16) so the icon doesn't cover the value. */
     hideIcon?: boolean
   }
 >(({ className, children, hideIcon, ...props }, ref) => (

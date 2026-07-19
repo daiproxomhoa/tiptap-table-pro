@@ -33,19 +33,19 @@ export class AlignableTableView extends TableView {
     return result;
   }
 
-  /** NodeView render DOM riêng nên phải tự áp align lên <table>.
-   * Viền ô do attr borderColor của từng cell lo (renderHTML), không xử lý ở đây. */
+  /** The NodeView renders its own DOM, so we must apply align to the <table> ourselves.
+   * Cell borders are handled by each cell's borderColor attr (renderHTML), not here. */
   private applyAttrs(node: ProseMirrorNode) {
     this.applyAlign(node.attrs.align ?? "left");
     this.normalizeColWidths();
   }
 
   /**
-   * prosemirror-tables set `<col style="width:Npx">` + `table.style.width` px cố
-   * định khi mọi cột có colwidth → bảng thành FIXED px, không resize width cả
-   * bảng được nữa. Convert px → % (theo tổng) để colwidth thành TỈ LỆ: bảng giữ
-   * width % (wrapper/attr style lo), các cột co giãn theo. Bỏ table.style.width
-   * px mà plugin vừa set.
+   * prosemirror-tables sets `<col style="width:Npx">` + a fixed `table.style.width`
+   * in px once every column has a colwidth → the table becomes FIXED px and the whole
+   * table's width can no longer be resized. Convert px → % (relative to the total) so
+   * colwidth becomes a RATIO: the table keeps its % width (handled by wrapper/attr style)
+   * and the columns scale accordingly. Remove the px table.style.width the plugin just set.
    */
   private normalizeColWidths() {
     const table = this.dom.querySelector("table") as HTMLElement | null;
@@ -54,15 +54,16 @@ export class AlignableTableView extends TableView {
     const cols = Array.from(colgroup.children) as HTMLElement[];
     const pxs = cols.map((c) => parseFloat(c.style.width) || 0);
     const total = pxs.reduce((s, w) => s + w, 0);
-    // Chỉ chuẩn hoá khi mọi cột đã có width px (tổng > 0 và không col nào rỗng).
+    // Only normalize once every column has a px width (total > 0 and no col is empty).
     if (total <= 0 || pxs.some((w) => w <= 0)) return;
     cols.forEach((c, i) => {
       c.style.width = `${Math.round((pxs[i] / total) * 10000) / 100}%`;
     });
-    // Table = 100% wrapper (KHÔNG bỏ hẳn width: bỏ hẳn thì table co về min-content
-    // và col % thành % của auto-width → vô nghĩa). Wrapper mang width % thật (từ
-    // attr style, applyStoredStyles set), table full wrapper → col % scale đúng
-    // khi resize cả bảng.
+    // Table = 100% of wrapper (do NOT drop width entirely: dropping it shrinks the
+    // table to min-content and the col % becomes a % of auto-width → meaningless). The
+    // wrapper carries the real % width (from the attr style, set by applyStoredStyles);
+    // with the table filling the wrapper, the col % scales correctly when resizing the
+    // whole table.
     table.style.width = "100%";
   }
 
@@ -87,11 +88,12 @@ const isCellNode = (name: string) =>
   name === "tableCell" || name === "tableHeader";
 
 /**
- * HTML dán/khởi tạo thường KHÔNG có `colwidth` trên cell. Khi đó bảng render
- * đầy khung (CSS width), nhưng lần đầu tương tác `columnResizing` tự đo & gán
- * colwidth theo min-content → bảng "nhảy" co lại. Seed colwidth 1 lần ngay sau
- * khi view sẵn sàng: đo bề rộng thật của từng `<col>` (đang đầy khung) rồi ghi
- * vào node, để plugin resize không còn phải tự suy ra.
+ * Pasted/initial HTML usually has NO `colwidth` on the cells. In that case the table
+ * renders full width (CSS width), but on the first interaction `columnResizing` measures
+ * and assigns colwidth based on min-content → the table "jumps" and shrinks. Seed
+ * colwidth once, right after the view is ready: measure each `<col>`'s real width (while
+ * it is still full width) and write it into the node, so the resize plugin no longer has
+ * to infer it.
  */
 function seedColwidths(view: EditorView) {
   const { state } = view;
@@ -101,11 +103,11 @@ function seedColwidths(view: EditorView) {
   state.doc.descendants((node, pos) => {
     if (node.type.name !== "table") return true;
 
-    // Hàng đầu quyết định colwidth cho cả bảng.
+    // The first row determines colwidth for the whole table.
     const firstRow = node.firstChild;
     if (!firstRow) return false;
 
-    // Cell nào cũng có colwidth rồi → bỏ qua bảng này.
+    // Every cell already has a colwidth → skip this table.
     let missing = false;
     firstRow.forEach((cell) => {
       if (!cell.attrs.colwidth) missing = true;
@@ -118,15 +120,15 @@ function seedColwidths(view: EditorView) {
       null;
     if (!cols || cols.length === 0) return false;
 
-    // Đo bề rộng thật của mỗi <col> (bảng đang đầy khung).
+    // Measure each <col>'s real width (while the table is full width).
     const widths = Array.from(cols).map((c) =>
       Math.round((c as HTMLElement).getBoundingClientRect().width),
     );
     if (widths.some((w) => w <= 0)) return false;
 
-    // Duyệt cell hàng đầu, gán colwidth (mảng theo colspan) cho từng cell.
+    // Walk the first row's cells and assign colwidth (an array per colspan) to each cell.
     let colIndex = 0;
-    let cellPos = pos + 2; // table(pos) → row(pos+1) → cell đầu(pos+2)
+    let cellPos = pos + 2; // table(pos) → row(pos+1) → first cell(pos+2)
     firstRow.forEach((cell) => {
       const span = (cell.attrs.colspan as number) ?? 1;
       const slice = widths.slice(colIndex, colIndex + span);
@@ -138,13 +140,13 @@ function seedColwidths(view: EditorView) {
       cellPos += cell.nodeSize;
     });
 
-    return false; // không lồng bảng
+    return false; // no nested tables
   });
 
   if (changed) view.dispatch(tr.setMeta("addToHistory", false));
 }
 
-/** Đếm tổng số ô (td/th) trong doc. */
+/** Count the total number of cells (td/th) in the doc. */
 function countCells(doc: ProseMirrorNode): number {
   let n = 0;
   doc.descendants((node) => {
@@ -157,9 +159,10 @@ function countCells(doc: ProseMirrorNode): number {
   return n;
 }
 
-/** Sau khi cấu trúc bảng đổi (thêm dòng/cột, dán, tách ô), ô mới mang
- * borderColor mặc định (null). Đồng bộ mọi ô trong bảng về màu chung của bảng
- * (màu non-null đầu tiên) để viền đồng nhất. Bảng toàn null → bỏ qua. */
+/** After the table structure changes (adding rows/columns, pasting, splitting cells),
+ * new cells carry the default borderColor (null). Sync every cell in the table to the
+ * table's common color (the first non-null color) so the borders are uniform. If the
+ * table is all null → skip. */
 function syncTableBorderColors(doc: ProseMirrorNode, tr: Transaction): boolean {
   let changed = false;
   doc.descendants((node, pos) => {
@@ -180,7 +183,7 @@ function syncTableBorderColors(doc: ProseMirrorNode, tr: Transaction): boolean {
         return true;
       });
     }
-    return false; // không lồng bảng trong bảng
+    return false; // no tables nested inside tables
   });
   return changed;
 }
@@ -196,8 +199,9 @@ export const TableWithStyle = Table.extend({
   addProseMirrorPlugins() {
     return [
       ...(this.parent?.() ?? []),
-      // Seed colwidth 1 lần sau khi view mount (bảng đã đầy khung), để lần đầu
-      // click không kích columnResizing tự đo min-content khiến bảng nhảy co.
+      // Seed colwidth once after the view mounts (while the table is full width), so the
+      // first click doesn't trigger columnResizing to measure min-content and make the
+      // table jump/shrink.
       new Plugin({
         key: colwidthSeedKey,
         view: (editorView) => {
@@ -209,8 +213,9 @@ export const TableWithStyle = Table.extend({
         key: borderSyncKey,
         appendTransaction: (transactions, oldState, newState) => {
           if (!transactions.some((t) => t.docChanged)) return null;
-          // Chỉ đồng bộ khi có ô MỚI (thêm dòng/cột, dán, tách). Đổi attr 1 ô
-          // không tăng số ô → bỏ qua để không lan màu viền ra cả bảng.
+          // Only sync when there are NEW cells (adding rows/columns, pasting, splitting).
+          // Changing one cell's attr doesn't increase the cell count → skip so the border
+          // color doesn't spread across the whole table.
           if (countCells(newState.doc) <= countCells(oldState.doc)) return null;
           const tr = newState.tr;
           return syncTableBorderColors(newState.doc, tr) ? tr : null;
@@ -247,8 +252,8 @@ export const TableWithStyle = Table.extend({
   },
 });
 
-/** Attr style-based dùng chung cho td/th. Mỗi attr render 1 mảnh `style`;
- * mergeAttributes gộp các mảnh `style` lại nên không đè nhau. */
+/** Style-based attrs shared by td/th. Each attr renders one `style` fragment;
+ * mergeAttributes merges the `style` fragments so they don't override each other. */
 const sharedCellAttributes = {
   backgroundColor: {
     default: null as string | null,
@@ -337,9 +342,9 @@ export const TableRowWithHeight = TableRow.extend({
     return {
       ...this.parent?.(),
       height: {
-        // Row TẠO MỚI (createAndFill khi addRow) dùng default 34px. Row LOAD từ
-        // HTML: parseHTML trả giá trị thật (null nếu không có) → giữ null, không
-        // rơi về default (null ≠ undefined nên TipTap không fallback).
+        // NEWLY CREATED rows (createAndFill on addRow) use the default 34px. Rows LOADED
+        // from HTML: parseHTML returns the real value (null if absent) → keep null, don't
+        // fall back to the default (null ≠ undefined, so TipTap doesn't fall back).
         default: "34px" as string | null,
         parseHTML: (element: HTMLElement) => element.style.height || null,
         renderHTML: (attributes: Record<string, unknown>) => {

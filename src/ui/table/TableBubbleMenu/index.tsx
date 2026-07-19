@@ -9,8 +9,9 @@ import {
   TableCellsMerge,
   TableCellsSplit,
   Trash2,
-} from "lucide-react";
+} from "../../../lib/icons";
 import { useEffect, useState } from "react";
+import { cn } from "../../../lib/utils";
 import { useIntl } from "../../../lib/intl";
 import { firstCellBorderColor, setAllCellsBorderColor } from "../utils";
 import { RowColumnControls } from "./RowColumnControls";
@@ -20,9 +21,11 @@ import { useTableMenuPosition } from "./useTableMenuPosition";
 
 interface TableBubbleMenuProps {
   editor: Editor;
+  /** Extra class names merged onto the floating menu container. */
+  className?: string;
 }
 
-export function TableBubbleMenu({ editor }: TableBubbleMenuProps) {
+export function TableBubbleMenu({ editor, className }: TableBubbleMenuProps) {
   const intl = useIntl();
 
   const inTable = useEditorState({
@@ -32,7 +35,7 @@ export function TableBubbleMenu({ editor }: TableBubbleMenuProps) {
 
   const pos = useTableMenuPosition(editor, inTable);
 
-  // Ẩn menu khi editor mất focus (click ra chỗ khác)
+  // Hide the menu when the editor loses focus (e.g. clicking elsewhere)
   const [focused, setFocused] = useState(editor.isFocused);
   useEffect(() => {
     const onFocus = () => setFocused(true);
@@ -51,7 +54,7 @@ export function TableBubbleMenu({ editor }: TableBubbleMenuProps) {
       e.view.dom.querySelectorAll(".selectedCell").length > 1,
   });
 
-  // Ô đã merge: cell hiện tại có colspan/rowspan > 1 → cho phép Split
+  // Merged cell: the current cell has colspan/rowspan > 1 → allow Split
   const mergedCell = useEditorState({
     editor,
     selector: ({ editor: e }) => {
@@ -78,27 +81,29 @@ export function TableBubbleMenu({ editor }: TableBubbleMenuProps) {
   return (
     <TooltipProvider delayDuration={400}>
       <div
-        // Giữ focus editor khi bấm nút (tránh blur làm menu biến mất trước click)
+        // Keep the editor focused when clicking a button (prevents blur from hiding the menu before the click registers)
         onMouseDown={(e) => e.preventDefault()}
         style={{
           position: "absolute",
           left: pos.x,
-          // Đủ chỗ: trên đỉnh bảng (-100%). Thiếu chỗ: lật xuống dưới đáy bảng.
+          // Enough room: above the top of the table (-100%). Not enough room: flip it below the bottom of the table.
           top: pos.below ? pos.bottom + 8 : pos.y - 8,
           transform: pos.below
             ? "translate(-50%, 0)"
             : "translate(-50%, -100%)",
           zIndex: 50,
         }}
-        className="flex items-center gap-0.5 rounded-md border bg-background px-1 py-0.5 shadow-md"
+        className={cn(
+          "ttp-bubble-menu flex items-center gap-0.5 rounded-md border bg-background px-1 py-0.5 shadow-md",
+          className,
+        )}
       >
         {multiSelect || mergedCell ? (
           <>
             {multiSelect && (
               <Tip
                 label={intl.formatMessage({
-                  defaultMessage: "Merge ô đang chọn",
-                  id: "9npCtH",
+                  defaultMessage: "Merge selected cells", id: "mergeSelectedCells",
                 })}
               >
                 <Toggle
@@ -114,8 +119,7 @@ export function TableBubbleMenu({ editor }: TableBubbleMenuProps) {
             )}
             <Tip
               label={intl.formatMessage({
-                defaultMessage: "Split ô đã merge",
-                id: "KEMj8C",
+                defaultMessage: "Split merged cell", id: "splitCell",
               })}
             >
               <Toggle
@@ -133,17 +137,15 @@ export function TableBubbleMenu({ editor }: TableBubbleMenuProps) {
 
             <Separator orientation="vertical" className="mx-0.5 h-5" />
 
-            {/* Viền */}
+            {/* Border */}
             <Tip
               label={
                 isBorderless
                   ? intl.formatMessage({
-                      defaultMessage: "Hiện viền",
-                      id: "M9RRtp",
+                      defaultMessage: "Show borders", id: "showBorders",
                     })
                   : intl.formatMessage({
-                      defaultMessage: "Ẩn viền",
-                      id: "oU622j",
+                      defaultMessage: "Hide borders", id: "hideBorders",
                     })
               }
             >
@@ -164,16 +166,15 @@ export function TableBubbleMenu({ editor }: TableBubbleMenuProps) {
 
             <Separator orientation="vertical" className="mx-0.5 h-5" />
 
-            {/* Căn chỉnh bảng */}
+            {/* Table alignment */}
             <TableAlignControls editor={editor} tableAlign={tableAlign} />
 
             <Separator orientation="vertical" className="mx-0.5 h-5" />
 
-            {/* Xoá bảng */}
+            {/* Delete table */}
             <Tip
               label={intl.formatMessage({
-                defaultMessage: "Xoá bảng",
-                id: "PkK+uP",
+                defaultMessage: "Delete table", id: "deleteTable",
               })}
             >
               <Toggle

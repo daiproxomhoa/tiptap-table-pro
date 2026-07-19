@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Editor } from "@tiptap/core";
+import { cn } from "../lib/utils";
 import { FormattedMessage, useIntl } from "../lib/intl";
 import {
   Dialog,
@@ -23,18 +24,25 @@ interface LinkDialogProps {
   editor: Editor;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Extra class names merged onto the dialog content. */
+  className?: string;
 }
 
 type Target = "_self" | "_blank";
 
-/** Text đang bôi đen trong selection (để điền sẵn "Text to display"). */
+/** The text currently highlighted in the selection (used to pre-fill "Text to display"). */
 function selectedText(editor: Editor): string {
   const { from, to } = editor.state.selection;
   return editor.state.doc.textBetween(from, to, " ");
 }
 
-/** Dialog chèn/sửa link: URL, text hiển thị, title, mở ở cửa sổ nào. */
-export function LinkDialog({ editor, open, onOpenChange }: LinkDialogProps) {
+/** Dialog for inserting/editing a link: URL, display text, title, and which window to open it in. */
+export function LinkDialog({
+  editor,
+  open,
+  onOpenChange,
+  className,
+}: LinkDialogProps) {
   const intl = useIntl();
   const attrs = editor.getAttributes("link");
   const [href, setHref] = useState<string>(attrs.href ?? "");
@@ -61,7 +69,7 @@ export function LinkDialog({ editor, open, onOpenChange }: LinkDialogProps) {
     const display = text.trim();
     const { from, to } = editor.state.selection;
     if (display && (editor.state.selection.empty || display !== selectedText(editor))) {
-      // Thay phần chọn (hoặc chèn mới) bằng text hiển thị rồi gắn link lên đó
+      // Replace the selection (or insert new content) with the display text, then attach the link to it
       chain
         .insertContentAt({ from, to }, display)
         .setTextSelection({ from, to: from + display.length })
@@ -75,10 +83,10 @@ export function LinkDialog({ editor, open, onOpenChange }: LinkDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className={cn("ttp-link-dialog sm:max-w-lg", className)}>
         <DialogHeader>
           <DialogTitle>
-            <FormattedMessage defaultMessage="Chèn / Sửa liên kết" id="OJojNl" />
+            <FormattedMessage defaultMessage="Insert / edit link" id="insertEditLink" />
           </DialogTitle>
         </DialogHeader>
 
@@ -93,19 +101,18 @@ export function LinkDialog({ editor, open, onOpenChange }: LinkDialogProps) {
           </FieldLabel>
           <FieldLabel
             label={intl.formatMessage({
-              defaultMessage: "Văn bản hiển thị",
-              id: 'f8sYHj',
+              defaultMessage: "Text to display", id: "displayText",
             })}
           >
             <Input value={text} onChange={(e) => setText(e.target.value)} />
           </FieldLabel>
           <FieldLabel
-            label={intl.formatMessage({ defaultMessage: "Tiêu đề", id: 'El1V48' })}
+            label={intl.formatMessage({ defaultMessage: "Title", id: "title" })}
           >
             <Input value={title} onChange={(e) => setTitle(e.target.value)} />
           </FieldLabel>
           <FieldLabel
-            label={intl.formatMessage({ defaultMessage: "Mở ở", id: 'NmxeEt' })}
+            label={intl.formatMessage({ defaultMessage: "Open in", id: "openIn" })}
           >
             <Select value={target} onValueChange={(v) => setTarget(v as Target)}>
               <SelectTrigger>
@@ -114,12 +121,11 @@ export function LinkDialog({ editor, open, onOpenChange }: LinkDialogProps) {
               <SelectContent>
                 <SelectItem value="_self">
                   {intl.formatMessage({
-                    defaultMessage: "Cửa sổ hiện tại",
-                    id: 'G1V5pr',
+                    defaultMessage: "Current window", id: "currentWindow",
                   })}
                 </SelectItem>
                 <SelectItem value="_blank">
-                  {intl.formatMessage({ defaultMessage: "Tab mới", id: 'S1372C' })}
+                  {intl.formatMessage({ defaultMessage: "New tab", id: "newTab" })}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -132,10 +138,10 @@ export function LinkDialog({ editor, open, onOpenChange }: LinkDialogProps) {
             className="min-w-25"
             onClick={() => onOpenChange(false)}
           >
-            <FormattedMessage defaultMessage="Huỷ" id="NfX0sh" />
+            <FormattedMessage defaultMessage="Cancel" id="cancel" />
           </Button>
           <Button className="min-w-25" onClick={save}>
-            <FormattedMessage defaultMessage="Lưu" id="oa/wrx" />
+            <FormattedMessage defaultMessage="Save" id="save" />
           </Button>
         </DialogFooter>
       </DialogContent>

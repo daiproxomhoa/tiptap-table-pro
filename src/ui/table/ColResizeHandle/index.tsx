@@ -3,14 +3,17 @@ import { createPortal } from "react-dom";
 import { useEditorState, type Editor } from "@tiptap/react";
 import { focusedTableEl, setBodyStyle, setColumnWidths } from "../utils";
 import { clampColBoundary, splitAdjacentWidths } from "../resize-math";
+import { cn } from "../../../lib/utils";
 
 interface ColResizeHandleProps {
   editor: Editor;
+  /** Extra class names merged onto each column handle. */
+  className?: string;
 }
 
-const MIN_COL = 24; // px — cột không hẹp hơn mức này
+const MIN_COL = 24; // px — a column is never narrower than this
 
-/** Lấy hàng tham chiếu (đủ cột đơn colspan=1); fallback hàng nhiều cell nhất. */
+/** Get the reference row (full set of single columns, colspan=1); fallback to the row with the most cells. */
 function refRowCells(table: HTMLElement): HTMLElement[] {
   const rows = Array.from(
     table.querySelectorAll(":scope > tbody > tr, :scope > tr"),
@@ -32,17 +35,19 @@ function refRowCells(table: HTMLElement): HTMLElement[] {
 }
 
 /**
- * Kéo ranh giữa 2 cột để chỉnh bề rộng (colwidth per-cell). Handle portal vào
- * .tableWrapper; mỗi ranh cột (trừ ranh phải cùng = cạnh bảng) có 1 thanh dọc
- * hiện khi hover. Kéo → line ảo dọc theo chuột (clamp trong 2 cột kề, ≥ MIN_COL);
- * thả → cột trái += delta, cột phải −= delta (giữ tổng), commit colwidth.
+ * Drag the boundary between 2 columns to adjust their widths (colwidth per-cell). The
+ * handle is portaled into .tableWrapper; each column boundary (except the far right = the
+ * table edge) has a vertical bar that shows on hover. Dragging → a vertical ghost line
+ * follows the mouse (clamped within the 2 adjacent columns, ≥ MIN_COL); release → left
+ * column += delta, right column −= delta (preserving the total), commit colwidth.
  */
-export function ColResizeHandle({ editor }: ColResizeHandleProps) {
+export function ColResizeHandle({ editor, className }: ColResizeHandleProps) {
   const [wrapperEl, setWrapperEl] = useState<HTMLElement | null>(null);
   const wrapperRef = useRef<HTMLElement | null>(null);
   const tableRef = useRef<HTMLElement | null>(null);
-  // Cell hàng tham chiếu (đủ cột đơn) đã tìm ở update() — startDrag tái dùng thay
-  // vì quét lại refRowCells. Element sống qua render; rect đọc tươi lúc kéo.
+  // The reference row's cells (full set of single columns) found in update() — startDrag
+  // reuses them instead of re-scanning via refRowCells. The elements persist across
+  // renders; their rects are read fresh at drag time.
   const refCellsRef = useRef<HTMLElement[]>([]);
   const isDragging = useRef(false);
   const [boundaries, setBoundaries] = useState<number[]>([]);
@@ -147,15 +152,18 @@ export function ColResizeHandle({ editor }: ColResizeHandleProps) {
         <div
           key={i}
           onMouseDown={(e) => startDrag(e, i)}
-          className="group absolute top-0 bottom-0 flex w-2.5 -translate-x-1/2 justify-center cursor-col-resize"
+          className={cn(
+            "ttp-col-resize-handle group absolute top-0 bottom-0 flex w-2.5 -translate-x-1/2 justify-center cursor-col-resize",
+            className,
+          )}
           style={{ left: x }}
         >
-          <div className="h-full w-0.5 rounded-full bg-blue-500 opacity-0 shadow-[0_0_8px_2px] shadow-blue-500/40 transition-all duration-200 group-hover:w-1 group-hover:opacity-100" />
+          <div className="ttp-col-resize-handle__bar h-full w-0.5 rounded-full bg-blue-500 opacity-0 shadow-[0_0_8px_2px] shadow-blue-500/40 transition-all duration-200 group-hover:w-1 group-hover:opacity-100" />
         </div>
       ))}
       {guideLeft !== null && (
         <div
-          className="pointer-events-none absolute top-0 bottom-0 z-20 w-1 -translate-x-1/2 rounded bg-blue-500"
+          className="ttp-col-resize-handle__guide pointer-events-none absolute top-0 bottom-0 z-20 w-1 -translate-x-1/2 rounded bg-blue-500"
           style={{ left: guideLeft }}
         />
       )}
