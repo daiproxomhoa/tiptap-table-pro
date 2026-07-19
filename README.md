@@ -29,6 +29,7 @@ Tables authored with `tiptap-table-pro` carry their formatting as inline styles,
 - [Quick start — the extensions](#quick-start--the-extensions)
 - [Adding the editing UI](#adding-the-editing-ui)
 - [Feature reference](#feature-reference)
+- [Per-feature guides](#per-feature-guides)
 - [Styling requirement for the UI](#styling-requirement-for-the-ui)
 - [Customization](#customization)
 - [Localization](#localization)
@@ -171,6 +172,21 @@ A complete, copy-pasteable component lives in [`examples/FullEditor.tsx`](./exam
 | `ColResizeHandle` | A handle on each interior column boundary; drag to redistribute width between the two adjacent columns while keeping the total constant. |
 | `TableCellColorPicker` | A palette of preset swatches plus a custom hex input for setting or clearing a cell's background. |
 | `LinkDialog` | A dialog to insert or edit a link (URL, display text, title, and target window). |
+
+## Per-feature guides
+
+Detailed usage, props, examples, and CSS classes for each feature live in
+[`docs/`](./docs/README.md):
+
+- [Core extensions](./docs/core-extensions.md) — register the styled table nodes (headless).
+- [TablePicker](./docs/table-picker.md) — insert a table from a size grid.
+- [TableBubbleMenu](./docs/bubble-menu.md) — floating toolbar over the active table.
+- [TableContextMenu](./docs/context-menu.md) — right-click menu (rows, columns, cells, sort, properties).
+- [Resize handles](./docs/resize-handles.md) — table / row / column drag resizing.
+- [TableCellColorPicker](./docs/cell-color-picker.md) — cell background palette.
+- [LinkDialog](./docs/link-dialog.md) — insert / edit links.
+- [Customization](./docs/customization.md) — `className` props and the `ttp-*` class reference.
+- [Localization](./docs/localization.md) — translate or reword the labels.
 
 ## Styling requirement for the UI
 
