@@ -9,7 +9,7 @@ import {
   TableResizeHandle,
   RowResizeHandle,
   ColResizeHandle,
-} from "tiptap-table-pro";
+} from "tiptap-ui-pro";
 
 <div style={{ position: "relative" }}>
   <TableResizeHandle editor={editor} />
@@ -54,3 +54,20 @@ You can mix and match — include only the handles you want (e.g. columns only).
 > Keep `TableWithStyle.configure({ resizable: false })` (see
 > [Core extensions](./core-extensions.md)). These components own resizing;
 > prosemirror-tables' built-in column resizing should stay off.
+
+### Don't put `overflow` on `.tableWrapper`
+
+The handles are portaled into the table's `.tableWrapper` and sit right on the
+table edges, sticking out a few pixels. If `.tableWrapper` has `overflow-x: auto`
+(or any non-`visible` overflow), those edge handles will trigger **spurious
+horizontal *and* vertical scrollbars** even when the table fits — because CSS
+forces the other axis to `auto` when one axis is set.
+
+Keep the wrapper's overflow visible:
+
+```css
+.tableWrapper { overflow: visible; }
+```
+
+If you need horizontal scrolling for very wide tables, apply `overflow-x: auto`
+to an **outer** container, not to `.tableWrapper` itself.

@@ -1,4 +1,4 @@
-# tiptap-table-pro — documentation
+# tiptap-ui-pro — documentation
 
 Per-feature guides. Each page covers what the feature does, how to import and use
 it, its props, and the CSS classes it exposes for customization.
@@ -14,6 +14,7 @@ it, its props, and the CSS classes it exposes for customization.
 - [TableContextMenu](./context-menu.md) — right-click menu (rows, columns, cells, sort, properties).
 - [Resize handles](./resize-handles.md) — `TableResizeHandle`, `RowResizeHandle`, `ColResizeHandle`.
 - [TableCellColorPicker](./cell-color-picker.md) — cell background palette.
+- [Image editing](./image.md) — image node + bubble menu + resize handle (align, transform, adjust, caption).
 - [LinkDialog](./link-dialog.md) — insert / edit links.
 
 ## Cross-cutting

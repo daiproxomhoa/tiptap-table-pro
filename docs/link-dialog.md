@@ -9,7 +9,7 @@ also drive it yourself (e.g. from a toolbar button).
 
 ```tsx
 import { useState } from "react";
-import { LinkDialog } from "tiptap-table-pro";
+import { LinkDialog } from "tiptap-ui-pro";
 
 function Toolbar({ editor }) {
   const [open, setOpen] = useState(false);

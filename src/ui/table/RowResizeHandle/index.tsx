@@ -81,14 +81,31 @@ export function RowResizeHandle({ editor, className }: RowResizeHandleProps) {
 
     const trRect = tr.getBoundingClientRect();
     const rowTop = trRect.top;
-    // Min = the row's content height. Temporarily force tr.style.height='0' then read
-    // scrollHeight — if read while the row is still stretched tall by its old height,
-    // scrollHeight equals that height (content < box) → minH = the current height → the
-    // row can only grow, not shrink. Restore immediately after measuring.
-    const prev = tr.style.height;
-    tr.style.height = "0";
-    const minH = tr.scrollHeight;
-    tr.style.height = prev;
+    // Min = the row's content height (the tallest cell's content). Measured WITHOUT
+    // mutating the ProseMirror-managed <tr> DOM — writing to tr.style directly (the old
+    // `tr.style.height = "0"` trick) can trip ProseMirror's DOM observer and trigger a
+    // re-render/desync mid-drag. Instead, sum each cell's block children heights plus its
+    // vertical padding/border (children keep their natural height even when the row box is
+    // stretched), and take the max across cells.
+    const cellContentHeight = (cell: HTMLElement) => {
+      const cs = getComputedStyle(cell);
+      const frame =
+        parseFloat(cs.paddingTop) +
+        parseFloat(cs.paddingBottom) +
+        parseFloat(cs.borderTopWidth) +
+        parseFloat(cs.borderBottomWidth);
+      let content = 0;
+      for (const child of Array.from(cell.children) as HTMLElement[]) {
+        const st = getComputedStyle(child);
+        content +=
+          child.getBoundingClientRect().height +
+          parseFloat(st.marginTop) +
+          parseFloat(st.marginBottom);
+      }
+      return Math.ceil(content + frame);
+    };
+    const cells = Array.from(tr.children) as HTMLElement[];
+    const minH = Math.max(1, ...cells.map(cellContentHeight));
 
     // Convert page coordinates (clientY) → coordinates within the wrapper for the ghost line.
     const wrapTop = () => wrapper.getBoundingClientRect().top;

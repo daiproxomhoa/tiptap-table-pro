@@ -1,11 +1,11 @@
 /**
- * Full working example: a TipTap editor wired up with tiptap-table-pro's
+ * Full working example: a TipTap editor wired up with tiptap-ui-pro's
  * styled table extensions and the complete editing UI.
  *
  * This file is illustrative (not built or published). Copy it into a React +
  * Tailwind (shadcn tokens) app that has the peer dependencies installed:
  *
- *   npm install tiptap-table-pro react react-dom \
+ *   npm install tiptap-ui-pro react react-dom \
  *     @tiptap/core @tiptap/react @tiptap/pm \
  *     @tiptap/extension-table @tiptap/extension-link @tiptap/starter-kit
  */
@@ -26,7 +26,7 @@ import {
   TableContextMenu,
   TableResizeHandle,
   RowResizeHandle,
-} from "tiptap-table-pro";
+} from "tiptap-ui-pro";
 
 const INITIAL = `
   <table style="width:100%;border-collapse:collapse">

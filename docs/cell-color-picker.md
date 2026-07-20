@@ -8,7 +8,7 @@ It is used automatically inside the [TableContextMenu](./context-menu.md)
 your own toolbar popover).
 
 ```tsx
-import { TableCellColorPicker } from "tiptap-table-pro";
+import { TableCellColorPicker } from "tiptap-ui-pro";
 
 <TableCellColorPicker editor={editor} onClose={() => setOpen(false)} />
 ```

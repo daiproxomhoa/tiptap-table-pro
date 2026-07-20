@@ -1,24 +1,27 @@
-# tiptap-table-pro
+# tiptap-ui-pro
 
-[![npm version](https://img.shields.io/npm/v/tiptap-table-pro.svg)](https://www.npmjs.com/package/tiptap-table-pro)
-[![license](https://img.shields.io/npm/l/tiptap-table-pro.svg)](./LICENSE)
-[![types](https://img.shields.io/npm/types/tiptap-table-pro.svg)](./dist/index.d.ts)
+[![npm version](https://img.shields.io/npm/v/tiptap-ui-pro.svg)](https://www.npmjs.com/package/tiptap-ui-pro)
+[![minzipped size](https://img.shields.io/bundlephobia/minzip/tiptap-ui-pro.svg)](https://bundlephobia.com/package/tiptap-ui-pro)
+[![install size](https://packagephobia.com/badge?p=tiptap-ui-pro)](https://packagephobia.com/result?p=tiptap-ui-pro)
+[![license](https://img.shields.io/npm/l/tiptap-ui-pro.svg)](./LICENSE)
+[![types](https://img.shields.io/npm/types/tiptap-ui-pro.svg)](./dist/index.d.ts)
 
-A production-grade table toolkit for [TipTap 3](https://tiptap.dev) / ProseMirror. It ships the styled, resizable table **node extensions** and a complete, drop-in **React editing UI** — so you can add spreadsheet-like tables to any rich-text editor without building the interaction layer yourself.
+A production-grade UI toolkit for [TipTap 3](https://tiptap.dev) / ProseMirror. It ships styled, resizable **table** and **image** node extensions plus a complete, drop-in **React editing UI** — so you can add spreadsheet-like tables and rich image editing (align, resize, rotate/flip, adjust, caption, alt text) to any rich-text editor without building the interaction layer yourself.
 
-Tables authored with `tiptap-table-pro` carry their formatting as inline styles, which means the HTML you get from `editor.getHTML()` renders identically everywhere — in the browser, in a PDF export, in an email, or anywhere else, with no accompanying stylesheet required.
+Content authored with `tiptap-ui-pro` carries its formatting as inline styles, which means the HTML you get from `editor.getHTML()` renders identically everywhere — in the browser, in a PDF export, in an email, or anywhere else, with no accompanying stylesheet required.
 
 ---
 
 ## Highlights
 
-- **Styled output, portable HTML.** Borders, background colors, alignment, row heights and column widths are serialized as inline styles on the emitted markup. No external CSS needed to render a table faithfully.
-- **Full column / row / table resizing.** Drag column boundaries, drag a row's bottom edge, or grab the table's corner and edge handles to resize the whole table. Column widths are normalized to percentages so tables stay fluid.
-- **Rich editing UI, batteries included.** A grid size picker, a contextual bubble toolbar, a right-click context menu (insert/delete rows & columns, merge/split cells, sort, cell & table properties), a cell background color picker, and a link dialog.
-- **Per-cell styling.** Background color, border color / width / style, text and vertical alignment, and header scope are first-class cell attributes.
+- **Styled output, portable HTML.** Borders, background colors, alignment, row heights, column widths, and image transforms are serialized as inline styles on the emitted markup. No external CSS needed to render content faithfully.
+- **Tables.** Full column / row / whole-table drag resizing (widths normalized to percentages so tables stay fluid), a grid size picker, a bubble toolbar, a right-click context menu (insert/delete rows & columns, merge/split cells, sort, cell & table properties), and a cell background color picker. Per-cell background/border/alignment attributes.
+- **Images.** Drag-resize handles, plus a bubble menu to align, resize, rotate/flip, adjust (brightness/contrast/exposure/gamma/vibrance/saturation/blur), edit alt text, and add a caption (figure/figcaption).
+- **Rich editing UI, batteries included** — every interaction layer is provided as React components.
 - **Two layers, cleanly separated.** A headless `core` entry (extensions only) and a full entry that adds the React UI. Use whichever you need.
 - **Customizable.** Every component exposes configuration props (color palettes, grid size, header behavior, …) and stable `ttp-*` CSS classes plus a `className` prop on each root.
 - **Localizable.** All UI strings can be overridden through a lightweight provider.
+- **Self-contained styling.** Ships its own compiled stylesheet — import one CSS file and the UI is fully styled. No Tailwind or shadcn setup required in your app.
 - **Fully typed.** Ships ESM + CJS builds and complete TypeScript declarations.
 
 ## Contents
@@ -30,7 +33,7 @@ Tables authored with `tiptap-table-pro` carry their formatting as inline styles,
 - [Adding the editing UI](#adding-the-editing-ui)
 - [Feature reference](#feature-reference)
 - [Per-feature guides](#per-feature-guides)
-- [Styling requirement for the UI](#styling-requirement-for-the-ui)
+- [Styling the UI](#styling-the-ui)
 - [Customization](#customization)
 - [Localization](#localization)
 - [API](#api)
@@ -39,7 +42,7 @@ Tables authored with `tiptap-table-pro` carry their formatting as inline styles,
 
 ## Requirements
 
-`tiptap-table-pro` treats React and the TipTap framework as **peer dependencies** so it always reuses the single copy already in your app (installing a second copy of React or ProseMirror would break the editor). You only need to have these installed:
+`tiptap-ui-pro` treats React and the TipTap framework as **peer dependencies** so it always reuses the single copy already in your app (installing a second copy of React or ProseMirror would break the editor). You only need to have these installed:
 
 | Peer | Supported range |
 |---|---|
@@ -48,12 +51,12 @@ Tables authored with `tiptap-table-pro` carry their formatting as inline styles,
 
 Any TipTap 3 app already satisfies these. Everything else the library needs is a regular **dependency**, installed automatically with the package, so a missing dependency cannot break it. To keep that footprint small the UI ships its own inline SVG icons and class helpers (no `lucide-react`, `clsx`, `class-variance-authority` or `tailwind-merge`); the only third-party UI runtime dependency is **Radix UI** (for accessible dialog / dropdown / popover / select / tooltip primitives). The headless `core` entry has **zero** non-TipTap dependencies.
 
-The React UI additionally expects **Tailwind CSS** with shadcn/ui design tokens — see [Styling requirement](#styling-requirement-for-the-ui). The headless `core` entry has no styling dependency.
+For the React UI, import the shipped stylesheet once (`import "tiptap-ui-pro/styles.css"`) — no Tailwind or shadcn setup needed. See [Styling the UI](#styling-the-ui). The headless `core` entry has no styling dependency at all.
 
 ## Installation
 
 ```bash
-npm install tiptap-table-pro
+npm install tiptap-ui-pro
 ```
 
 Install the peers if your project does not already have them (a TipTap 3 app normally does):
@@ -68,13 +71,13 @@ The package exposes two entry points:
 
 ```ts
 // Headless — node extensions only. No React, Radix, or Tailwind pulled in.
-import { TableWithStyle, AlignableTableView } from "tiptap-table-pro/core";
+import { TableWithStyle, AlignableTableView } from "tiptap-ui-pro/core";
 
 // Full — everything in /core, plus the React editing UI.
-import { TableBubbleMenu, TableContextMenu } from "tiptap-table-pro";
+import { TableBubbleMenu, TableContextMenu } from "tiptap-ui-pro";
 ```
 
-Reach for `tiptap-table-pro/core` when you are building your own interface and only need the schema and behavior. Reach for the root import when you want the ready-made editing experience.
+Reach for `tiptap-ui-pro/core` when you are building your own interface and only need the schema and behavior. Reach for the root import when you want the ready-made editing experience.
 
 ## Quick start — the extensions
 
@@ -90,7 +93,10 @@ import {
   TableRowWithHeight,
   TableCellWithAttrs,
   TableHeaderWithAttrs,
-} from "tiptap-table-pro/core";
+  ImageWithAlign,
+  Figure,
+  Figcaption,
+} from "tiptap-ui-pro/core";
 
 const editor = useEditor({
   extensions: [
@@ -106,6 +112,10 @@ const editor = useEditor({
     TableRowWithHeight,
     TableCellWithAttrs,
     TableHeaderWithAttrs,
+    // Image (align + rotate/flip/adjust + drag-resize) and caption grouping.
+    ImageWithAlign.configure({ resize: { enabled: true } }),
+    Figure,
+    Figcaption,
   ],
   content: "<p>Hello</p>",
 });
@@ -134,9 +144,11 @@ import {
   TableResizeHandle, // corner/edge handles to resize the whole table
   RowResizeHandle,   // drag a row's bottom edge to set its height
   ColResizeHandle,   // drag a boundary between columns to set widths
-} from "tiptap-table-pro";
+  ImageBubbleMenu,   // floating toolbar over the selected image
+  ImageResizeHandle, // drag handles to resize the selected image
+} from "tiptap-ui-pro";
 
-function TableEditor({ editor }) {
+function Editor({ editor }) {
   if (!editor) return null;
 
   return (
@@ -146,10 +158,14 @@ function TableEditor({ editor }) {
 
       <TableContextMenu editor={editor}>
         <div className="relative">
+          {/* table UI */}
           <TableBubbleMenu editor={editor} />
           <TableResizeHandle editor={editor} />
           <RowResizeHandle editor={editor} />
           <ColResizeHandle editor={editor} />
+          {/* image UI */}
+          <ImageBubbleMenu editor={editor} />
+          <ImageResizeHandle editor={editor} />
           <EditorContent editor={editor} />
         </div>
       </TableContextMenu>
@@ -171,6 +187,8 @@ A complete, copy-pasteable component lives in [`examples/FullEditor.tsx`](./exam
 | `RowResizeHandle` | A thin handle at each row's bottom edge; drag to set that row's height, with a live guide line. |
 | `ColResizeHandle` | A handle on each interior column boundary; drag to redistribute width between the two adjacent columns while keeping the total constant. |
 | `TableCellColorPicker` | A palette of preset swatches plus a custom hex input for setting or clearing a cell's background. |
+| `ImageBubbleMenu` | A floating toolbar over the selected image: align, resize, rotate/flip, adjust (brightness/contrast/…), edit alt text, and add a caption. |
+| `ImageResizeHandle` | Drag handles on the selected image to resize it. |
 | `LinkDialog` | A dialog to insert or edit a link (URL, display text, title, and target window). |
 
 ## Per-feature guides
@@ -184,15 +202,42 @@ Detailed usage, props, examples, and CSS classes for each feature live in
 - [TableContextMenu](./docs/context-menu.md) — right-click menu (rows, columns, cells, sort, properties).
 - [Resize handles](./docs/resize-handles.md) — table / row / column drag resizing.
 - [TableCellColorPicker](./docs/cell-color-picker.md) — cell background palette.
+- [Image editing](./docs/image.md) — `ImageWithAlign` + `ImageBubbleMenu` + `ImageResizeHandle`.
 - [LinkDialog](./docs/link-dialog.md) — insert / edit links.
 - [Customization](./docs/customization.md) — `className` props and the `ttp-*` class reference.
 - [Localization](./docs/localization.md) — translate or reword the labels.
 
-## Styling requirement for the UI
+## Styling the UI
 
-The React UI is built with Tailwind utility classes and shadcn/ui design tokens (`bg-background`, `text-destructive`, `border-input`, and so on). To render it correctly, your app must have **Tailwind CSS** configured with the standard shadcn CSS variables (`--background`, `--foreground`, `--primary`, `--destructive`, `--border`, `--ring`, …).
+The React UI ships a **self-contained, precompiled stylesheet**. Import it once,
+anywhere in your app, and the components are fully styled — you do **not** need
+Tailwind or shadcn tokens configured:
 
-This applies only to the React UI. The headless `core` entry outputs plain, inline-styled HTML and requires no Tailwind or design tokens.
+```ts
+import "tiptap-ui-pro/styles.css";
+```
+
+The stylesheet bundles Tailwind's base **preflight** (a global reset that
+normalizes margins, headings, form controls, etc.) plus the utilities the
+components use — this is what makes the UI render pixel-for-pixel as designed.
+Because preflight is global, import it at your app root. If your app already runs
+Tailwind, **skip this import** and rely on your own build instead (the components
+use the same token names). The design tokens (colors, radius) are CSS variables
+you can override:
+
+```css
+:root {
+  --color-primary: hsl(221 83% 53%);
+  --color-destructive: hsl(0 84% 60%);
+  --color-border: hsl(214 32% 91%);
+  /* … */
+}
+```
+
+Already using Tailwind + shadcn in your app? You can skip the CSS import — the
+components use the same token names and will pick up your theme.
+
+The headless `core` entry outputs plain, inline-styled HTML and needs no CSS at all.
 
 ## Customization
 
@@ -258,7 +303,7 @@ Each component renders stable, namespaced `ttp-*` classes on its parts, and acce
 UI labels default to **English**. To translate or reword them, wrap your editor in `TableIntlProvider` and supply overrides keyed by the readable message id:
 
 ```tsx
-import { TableIntlProvider } from "tiptap-table-pro";
+import { TableIntlProvider } from "tiptap-ui-pro";
 
 <TableIntlProvider
   messages={{
@@ -275,21 +320,22 @@ Message ids are human-readable (`insertTable`, `deleteTable`, `cellProperties`, 
 
 ## API
 
-### `tiptap-table-pro/core`
+### `tiptap-ui-pro/core`
 
 Node extensions and helpers, no React:
 
 - `TableWithStyle`, `TableCellWithAttrs`, `TableHeaderWithAttrs`, `TableRowWithHeight` — the styled table nodes.
 - `AlignableTableView` — a `NodeView` that applies table alignment and normalizes column widths to percentages.
+- `ImageWithAlign`, `Figure`, `Figcaption` — the image node (align + rotate/flip/adjust + drag-resize) and figure/figcaption caption grouping.
 - `LinkWithStyle`, `blockLinkNav` — an inline-styled link mark and a click handler that suppresses navigation while editing.
 - `withStyle` — utility to prepend fixed inline styles to node attributes.
-- Style constants: `TABLE_STYLE`, `CELL_STYLE`, `HEADER_STYLE`, `BORDER_COLOR`, `LINK_STYLE`.
+- Style constants: `TABLE_STYLE`, `CELL_STYLE`, `HEADER_STYLE`, `BORDER_COLOR`, `LINK_STYLE`, `FIGURE_STYLE`, `FIGCAPTION_STYLE`.
 
 **Cell attributes** added by `TableCellWithAttrs` / `TableHeaderWithAttrs`: `backgroundColor`, `borderColor`, `borderWidth`, `borderStyle`, `textAlign`, `verticalAlign`, `scope`. `TableWithStyle` adds `align` (`left` | `center` | `right`); `TableRowWithHeight` adds `height`.
 
-### `tiptap-table-pro`
+### `tiptap-ui-pro`
 
-Everything above, plus the React components — `TablePicker`, `TableBubbleMenu`, `TableContextMenu`, `TableCellColorPicker`, `TableResizeHandle`, `RowResizeHandle`, `ColResizeHandle`, `LinkDialog` — and the `TableIntlProvider` for localization.
+Everything above, plus the React components — `TablePicker`, `TableBubbleMenu`, `TableContextMenu`, `TableCellColorPicker`, `TableResizeHandle`, `RowResizeHandle`, `ColResizeHandle`, `ImageBubbleMenu`, `ImageResizeHandle`, `LinkDialog` — and the `TableIntlProvider` for localization.
 
 ## Publishing
 
