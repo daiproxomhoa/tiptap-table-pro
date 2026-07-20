@@ -1,6 +1,6 @@
 {
   "name": "tiptap-ui-pro",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Styled, resizable TipTap 3 table extensions with a full editing UI: bubble menu, context menu, column/row/table resize handles, cell & table property dialogs, border and background color controls.",
   "keywords": [
     "tiptap",
