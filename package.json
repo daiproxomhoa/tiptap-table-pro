@@ -1,6 +1,6 @@
 {
   "name": "tiptap-table-pro",
-  "version": "0.5.1",
+  "version": "0.0.2",
   "description": "Styled, resizable TipTap 3 table extensions with a full editing UI: bubble menu, context menu, column/row/table resize handles, cell & table property dialogs, border and background color controls.",
   "keywords": [
     "tiptap",
@@ -11,7 +11,7 @@
     "react"
   ],
   "license": "MIT",
-  "author": "torilab",
+  "author": "daivt",
   "type": "module",
   "sideEffects": false,
   "files": [
