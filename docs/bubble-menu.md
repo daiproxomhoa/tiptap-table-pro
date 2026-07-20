@@ -5,7 +5,7 @@ the cursor is in. It offers the most common quick actions and hides itself when
 the editor loses focus.
 
 ```tsx
-import { TableBubbleMenu } from "tiptap-table-pro";
+import { TableBubbleMenu } from "tiptap-ui-pro";
 
 <div style={{ position: "relative" }}>
   <TableBubbleMenu editor={editor} />

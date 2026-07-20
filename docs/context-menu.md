@@ -5,7 +5,7 @@ renders `children` and shows the menu only when the right-click happens inside a
 table.
 
 ```tsx
-import { TableContextMenu } from "tiptap-table-pro";
+import { TableContextMenu } from "tiptap-ui-pro";
 
 <TableContextMenu editor={editor}>
   <EditorContent editor={editor} />

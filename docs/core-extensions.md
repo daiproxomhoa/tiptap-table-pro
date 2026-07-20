@@ -1,7 +1,7 @@
 # Core extensions
 
 The headless layer: TipTap node extensions with no React UI. Import from
-`tiptap-table-pro/core` — it pulls in no React components, Radix, or Tailwind.
+`tiptap-ui-pro/core` — it pulls in no React components, Radix, or Tailwind.
 
 ```ts
 import {
@@ -18,7 +18,7 @@ import {
   HEADER_STYLE,
   BORDER_COLOR,
   LINK_STYLE,
-} from "tiptap-table-pro/core";
+} from "tiptap-ui-pro/core";
 ```
 
 ## What each export is
@@ -50,7 +50,7 @@ import {
   TableRowWithHeight,
   TableCellWithAttrs,
   TableHeaderWithAttrs,
-} from "tiptap-table-pro/core";
+} from "tiptap-ui-pro/core";
 
 const editor = useEditor({
   extensions: [
@@ -111,7 +111,7 @@ If you want the styled link behavior, register the link mark and wire the
 navigation guard:
 
 ```tsx
-import { LinkWithStyle, blockLinkNav } from "tiptap-table-pro/core";
+import { LinkWithStyle, blockLinkNav } from "tiptap-ui-pro/core";
 
 useEditor({
   extensions: [/* … */ LinkWithStyle.configure({ openOnClick: false })],

@@ -1,4 +1,4 @@
-# tiptap-table-pro — documentation
+# tiptap-ui-pro — documentation
 
 Per-feature guides. Each page covers what the feature does, how to import and use
 it, its props, and the CSS classes it exposes for customization.

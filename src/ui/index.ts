@@ -7,3 +7,7 @@ export { TableResizeHandle } from "./table/TableResizeHandle";
 export { RowResizeHandle } from "./table/RowResizeHandle";
 export { ColResizeHandle } from "./table/ColResizeHandle";
 export { LinkDialog } from "./LinkDialog";
+
+// Image editing UI.
+export { ImageBubbleMenu } from "./image/ImageBubbleMenu";
+export { ImageResizeHandle } from "./image/ImageResizeHandle";

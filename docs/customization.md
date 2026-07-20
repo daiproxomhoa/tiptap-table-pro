@@ -57,7 +57,7 @@ See each component's page for defaults and examples.
 Import the shipped stylesheet once — no Tailwind or shadcn setup required:
 
 ```ts
-import "tiptap-table-pro/styles.css";
+import "tiptap-ui-pro/styles.css";
 ```
 
 The components read CSS variables for their theme. Override them anywhere to

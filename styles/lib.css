@@ -1,15 +1,24 @@
 /*
- * Self-contained stylesheet for tiptap-table-pro's React UI.
+ * Self-contained stylesheet for tiptap-ui-pro's React UI.
  * Compiled with Tailwind v4 into dist/styles.css and shipped with the package,
  * so consumers do NOT need Tailwind or shadcn tokens configured — they just:
  *
- *   import "tiptap-table-pro/styles.css";
+ *   import "tiptap-ui-pro/styles.css";
  *
- * Only the theme + utilities layers are imported (NO Tailwind preflight), so it
- * does not reset the host app's base styles. A tiny base layer supplies the two
- * things the components rely on: border-box sizing and a default border color.
+ * This mirrors exactly what the components were designed against (a full
+ * Tailwind v4 build): the official preflight base + utilities + shadcn tokens.
+ * The only deviation is forcing button `appearance: none` (reliable flat buttons
+ * across browsers) and a default border color for the `border` utilities.
+ *
+ * NOTE: this includes Tailwind's preflight, which is a global CSS reset
+ * (normalizes margins, headings, lists, form controls, etc). That is what makes
+ * the UI match its original design pixel-for-pixel. If your app already runs
+ * Tailwind, you can skip importing this file and rely on your own build.
  */
+@layer theme, base, utilities;
+
 @import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
 @import "tailwindcss/utilities.css" layer(utilities);
 
 /* Scan the library source so only the classes actually used are emitted. */
@@ -39,13 +48,22 @@
   --radius: 0.5rem;
 }
 
-/* Minimal base the components need, without a full preflight reset. */
 @layer base {
+  /* shadcn default: `border` utilities use the theme border color. */
   *,
-  ::before,
   ::after,
-  ::backdrop {
-    box-sizing: border-box;
-    border-color: var(--color-border, currentColor);
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-border);
+  }
+
+  /* Reliable flat buttons (some Chrome builds keep native chrome with
+     preflight's `appearance: button`). */
+  button,
+  input:where([type="button"], [type="reset"], [type="submit"]),
+  ::file-selector-button {
+    -webkit-appearance: none;
+    appearance: none;
   }
 }

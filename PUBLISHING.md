@@ -1,4 +1,4 @@
-# Publishing `tiptap-table-pro` to npm
+# Publishing `tiptap-ui-pro` to npm
 
 A complete, repeatable checklist for releasing this package.
 
@@ -10,10 +10,10 @@ A complete, repeatable checklist for releasing this package.
    *Authorization and writes* so publishes require a one-time code.
 4. Confirm the name is free:
    ```bash
-   npm view tiptap-table-pro
+   npm view tiptap-ui-pro
    ```
    A `404` means the name is available. If it's taken, change `"name"` in
-   `package.json` (e.g. a scoped name like `@yourorg/tiptap-table-pro`).
+   `package.json` (e.g. a scoped name like `@yourorg/tiptap-ui-pro`).
 
 ## 1. Log in from your terminal
 
@@ -48,8 +48,8 @@ Read the file list it prints. It should contain `dist/**`, `package.json`,
 Optionally create the real tarball to inspect:
 
 ```bash
-npm pack           # writes tiptap-table-pro-0.1.0.tgz
-tar -tzf tiptap-table-pro-*.tgz
+npm pack           # writes tiptap-ui-pro-0.1.0.tgz
+tar -tzf tiptap-ui-pro-*.tgz
 ```
 
 ## 4. Set the version
@@ -74,7 +74,7 @@ Unscoped public package:
 npm publish
 ```
 
-Scoped package (e.g. `@yourorg/tiptap-table-pro`) — scoped packages are private
+Scoped package (e.g. `@yourorg/tiptap-ui-pro`) — scoped packages are private
 by default, so make it public:
 
 ```bash
@@ -93,24 +93,24 @@ Test the install experience without affecting the `latest` tag:
 ```bash
 npm version prerelease --preid=rc   # e.g. 0.1.1-rc.0
 npm publish --tag next
-# consumers opt in with:  npm install tiptap-table-pro@next
+# consumers opt in with:  npm install tiptap-ui-pro@next
 ```
 
 Promote it to `latest` when happy:
 
 ```bash
-npm dist-tag add tiptap-table-pro@0.1.1 latest
+npm dist-tag add tiptap-ui-pro@0.1.1 latest
 ```
 
 ## 6. Verify the release
 
 ```bash
-npm view tiptap-table-pro
+npm view tiptap-ui-pro
 # in a throwaway folder:
-npm install tiptap-table-pro
+npm install tiptap-ui-pro
 ```
 
-Check the page at `https://www.npmjs.com/package/tiptap-table-pro`.
+Check the page at `https://www.npmjs.com/package/tiptap-ui-pro`.
 
 ## 7. Push the git tag
 
@@ -122,11 +122,11 @@ git push && git push --tags
 
 - **Within 72 hours** you may unpublish a specific version:
   ```bash
-  npm unpublish tiptap-table-pro@0.1.0
+  npm unpublish tiptap-ui-pro@0.1.0
   ```
   After 72 hours npm generally won't let you unpublish. Instead **deprecate**:
   ```bash
-  npm deprecate tiptap-table-pro@0.1.0 "Broken build, use 0.1.1"
+  npm deprecate tiptap-ui-pro@0.1.0 "Broken build, use 0.1.1"
   ```
 
 ## Automating with GitHub Actions (optional)

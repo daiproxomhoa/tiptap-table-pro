@@ -5,7 +5,7 @@ your tree that contains the editor UI in `TableIntlProvider` and supply
 overrides keyed by the message id.
 
 ```tsx
-import { TableIntlProvider } from "tiptap-table-pro";
+import { TableIntlProvider } from "tiptap-ui-pro";
 
 <TableIntlProvider
   messages={{

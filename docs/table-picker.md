@@ -4,7 +4,7 @@ A toolbar toggle button that opens a hover grid; moving the mouse previews the
 size and clicking inserts a table of that many rows × columns.
 
 ```tsx
-import { TablePicker } from "tiptap-table-pro";
+import { TablePicker } from "tiptap-ui-pro";
 
 <TablePicker editor={editor} />
 ```

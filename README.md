@@ -1,12 +1,12 @@
-# tiptap-table-pro
+# tiptap-ui-pro
 
-[![npm version](https://img.shields.io/npm/v/tiptap-table-pro.svg)](https://www.npmjs.com/package/tiptap-table-pro)
-[![license](https://img.shields.io/npm/l/tiptap-table-pro.svg)](./LICENSE)
-[![types](https://img.shields.io/npm/types/tiptap-table-pro.svg)](./dist/index.d.ts)
+[![npm version](https://img.shields.io/npm/v/tiptap-ui-pro.svg)](https://www.npmjs.com/package/tiptap-ui-pro)
+[![license](https://img.shields.io/npm/l/tiptap-ui-pro.svg)](./LICENSE)
+[![types](https://img.shields.io/npm/types/tiptap-ui-pro.svg)](./dist/index.d.ts)
 
 A production-grade table toolkit for [TipTap 3](https://tiptap.dev) / ProseMirror. It ships the styled, resizable table **node extensions** and a complete, drop-in **React editing UI** — so you can add spreadsheet-like tables to any rich-text editor without building the interaction layer yourself.
 
-Tables authored with `tiptap-table-pro` carry their formatting as inline styles, which means the HTML you get from `editor.getHTML()` renders identically everywhere — in the browser, in a PDF export, in an email, or anywhere else, with no accompanying stylesheet required.
+Tables authored with `tiptap-ui-pro` carry their formatting as inline styles, which means the HTML you get from `editor.getHTML()` renders identically everywhere — in the browser, in a PDF export, in an email, or anywhere else, with no accompanying stylesheet required.
 
 ---
 
@@ -40,7 +40,7 @@ Tables authored with `tiptap-table-pro` carry their formatting as inline styles,
 
 ## Requirements
 
-`tiptap-table-pro` treats React and the TipTap framework as **peer dependencies** so it always reuses the single copy already in your app (installing a second copy of React or ProseMirror would break the editor). You only need to have these installed:
+`tiptap-ui-pro` treats React and the TipTap framework as **peer dependencies** so it always reuses the single copy already in your app (installing a second copy of React or ProseMirror would break the editor). You only need to have these installed:
 
 | Peer | Supported range |
 |---|---|
@@ -49,12 +49,12 @@ Tables authored with `tiptap-table-pro` carry their formatting as inline styles,
 
 Any TipTap 3 app already satisfies these. Everything else the library needs is a regular **dependency**, installed automatically with the package, so a missing dependency cannot break it. To keep that footprint small the UI ships its own inline SVG icons and class helpers (no `lucide-react`, `clsx`, `class-variance-authority` or `tailwind-merge`); the only third-party UI runtime dependency is **Radix UI** (for accessible dialog / dropdown / popover / select / tooltip primitives). The headless `core` entry has **zero** non-TipTap dependencies.
 
-For the React UI, import the shipped stylesheet once (`import "tiptap-table-pro/styles.css"`) — no Tailwind or shadcn setup needed. See [Styling the UI](#styling-the-ui). The headless `core` entry has no styling dependency at all.
+For the React UI, import the shipped stylesheet once (`import "tiptap-ui-pro/styles.css"`) — no Tailwind or shadcn setup needed. See [Styling the UI](#styling-the-ui). The headless `core` entry has no styling dependency at all.
 
 ## Installation
 
 ```bash
-npm install tiptap-table-pro
+npm install tiptap-ui-pro
 ```
 
 Install the peers if your project does not already have them (a TipTap 3 app normally does):
@@ -69,13 +69,13 @@ The package exposes two entry points:
 
 ```ts
 // Headless — node extensions only. No React, Radix, or Tailwind pulled in.
-import { TableWithStyle, AlignableTableView } from "tiptap-table-pro/core";
+import { TableWithStyle, AlignableTableView } from "tiptap-ui-pro/core";
 
 // Full — everything in /core, plus the React editing UI.
-import { TableBubbleMenu, TableContextMenu } from "tiptap-table-pro";
+import { TableBubbleMenu, TableContextMenu } from "tiptap-ui-pro";
 ```
 
-Reach for `tiptap-table-pro/core` when you are building your own interface and only need the schema and behavior. Reach for the root import when you want the ready-made editing experience.
+Reach for `tiptap-ui-pro/core` when you are building your own interface and only need the schema and behavior. Reach for the root import when you want the ready-made editing experience.
 
 ## Quick start — the extensions
 
@@ -91,7 +91,7 @@ import {
   TableRowWithHeight,
   TableCellWithAttrs,
   TableHeaderWithAttrs,
-} from "tiptap-table-pro/core";
+} from "tiptap-ui-pro/core";
 
 const editor = useEditor({
   extensions: [
@@ -135,7 +135,7 @@ import {
   TableResizeHandle, // corner/edge handles to resize the whole table
   RowResizeHandle,   // drag a row's bottom edge to set its height
   ColResizeHandle,   // drag a boundary between columns to set widths
-} from "tiptap-table-pro";
+} from "tiptap-ui-pro";
 
 function TableEditor({ editor }) {
   if (!editor) return null;
@@ -196,7 +196,7 @@ anywhere in your app, and the components are fully styled — you do **not** nee
 Tailwind or shadcn tokens configured:
 
 ```ts
-import "tiptap-table-pro/styles.css";
+import "tiptap-ui-pro/styles.css";
 ```
 
 The stylesheet only adds the utilities the components use plus a minimal base
@@ -282,7 +282,7 @@ Each component renders stable, namespaced `ttp-*` classes on its parts, and acce
 UI labels default to **English**. To translate or reword them, wrap your editor in `TableIntlProvider` and supply overrides keyed by the readable message id:
 
 ```tsx
-import { TableIntlProvider } from "tiptap-table-pro";
+import { TableIntlProvider } from "tiptap-ui-pro";
 
 <TableIntlProvider
   messages={{
@@ -299,7 +299,7 @@ Message ids are human-readable (`insertTable`, `deleteTable`, `cellProperties`, 
 
 ## API
 
-### `tiptap-table-pro/core`
+### `tiptap-ui-pro/core`
 
 Node extensions and helpers, no React:
 
@@ -311,7 +311,7 @@ Node extensions and helpers, no React:
 
 **Cell attributes** added by `TableCellWithAttrs` / `TableHeaderWithAttrs`: `backgroundColor`, `borderColor`, `borderWidth`, `borderStyle`, `textAlign`, `verticalAlign`, `scope`. `TableWithStyle` adds `align` (`left` | `center` | `right`); `TableRowWithHeight` adds `height`.
 
-### `tiptap-table-pro`
+### `tiptap-ui-pro`
 
 Everything above, plus the React components — `TablePicker`, `TableBubbleMenu`, `TableContextMenu`, `TableCellColorPicker`, `TableResizeHandle`, `RowResizeHandle`, `ColResizeHandle`, `LinkDialog` — and the `TableIntlProvider` for localization.
 
