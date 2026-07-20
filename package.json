@@ -1,6 +1,6 @@
 {
   "name": "tiptap-ui-pro",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Styled, resizable TipTap 3 table extensions with a full editing UI: bubble menu, context menu, column/row/table resize handles, cell & table property dialogs, border and background color controls.",
   "keywords": [
     "tiptap",
@@ -12,6 +12,14 @@
   ],
   "license": "MIT",
   "author": "daivt",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daiproxomhoa/tiptap-ui-pro.git"
+  },
+  "homepage": "https://github.com/daiproxomhoa/tiptap-ui-pro#readme",
+  "bugs": {
+    "url": "https://github.com/daiproxomhoa/tiptap-ui-pro/issues"
+  },
   "type": "module",
   "sideEffects": false,
   "files": [

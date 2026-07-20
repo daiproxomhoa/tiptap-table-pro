@@ -1,6 +1,8 @@
 # tiptap-ui-pro
 
 [![npm version](https://img.shields.io/npm/v/tiptap-ui-pro.svg)](https://www.npmjs.com/package/tiptap-ui-pro)
+[![minzipped size](https://img.shields.io/bundlephobia/minzip/tiptap-ui-pro.svg)](https://bundlephobia.com/package/tiptap-ui-pro)
+[![install size](https://packagephobia.com/badge?p=tiptap-ui-pro)](https://packagephobia.com/result?p=tiptap-ui-pro)
 [![license](https://img.shields.io/npm/l/tiptap-ui-pro.svg)](./LICENSE)
 [![types](https://img.shields.io/npm/types/tiptap-ui-pro.svg)](./dist/index.d.ts)
 
