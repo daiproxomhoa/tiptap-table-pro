@@ -1,0 +1,374 @@
+/* ---------------------------------------------------------------------------
+   Playground chrome styles — plain CSS, NO Tailwind.
+   The editor UI itself is fully styled by the library's shipped stylesheet
+   (tiptap-ui-pro/styles.css, imported in main.tsx). Everything here is just the
+   surrounding demo page: layout, header, toolbar frame, panels.
+   --------------------------------------------------------------------------- */
+
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --text: #0f172a;
+  --muted: #64748b;
+  --muted-2: #94a3b8;
+  --brand: #4f46e5;
+  --brand-hover: #4338ca;
+  --brand-soft: #eef2ff;
+  --code-bg: #0f172a;
+  --code-fg: #e2e8f0;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -12px rgb(15 23 42 / 0.12);
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(1200px 600px at 50% -200px, #eef2ff 0%, transparent 60%),
+    var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+}
+
+/* ---- Layout ------------------------------------------------------------- */
+.page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+/* ---- Top bar ------------------------------------------------------------ */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.75rem;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.brand__mark {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--brand) 0%, #7c3aed 100%);
+  color: #fff;
+  font-weight: 800;
+  font-size: 18px;
+  box-shadow: 0 6px 16px -6px rgb(79 70 229 / 0.6);
+}
+.brand__name {
+  font-size: 1.15rem;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.brand__sub {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 1px;
+}
+.topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 650;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  border: 1px solid #e0e7ff;
+}
+
+.linkbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--text);
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  transition: border-color 0.15s, background 0.15s;
+}
+.linkbtn:hover {
+  border-color: var(--border-strong);
+  background: #f8fafc;
+}
+
+.select {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+/* ---- Hero --------------------------------------------------------------- */
+.hero {
+  margin-bottom: 1.75rem;
+}
+.hero h1 {
+  font-size: 1.9rem;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+  margin: 0 0 0.5rem;
+}
+.hero p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  max-width: 62ch;
+}
+.hero code {
+  font-family: var(--mono);
+  font-size: 0.85em;
+  background: #f1f5f9;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0.05em 0.35em;
+}
+
+/* ---- Card / editor frame ------------------------------------------------ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+/* ---- Toolbar ------------------------------------------------------------ */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+  background: #fbfcfe;
+}
+.toolbar__group {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.toolbar__divider {
+  width: 1px;
+  align-self: stretch;
+  margin: 0.15rem 0.3rem;
+  background: var(--border);
+}
+.toolbar__spacer {
+  flex: 1;
+}
+
+.tbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 0.5rem;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.tbtn:hover {
+  background: #eef2f7;
+}
+.tbtn[data-active="true"] {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+.tbtn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ---- Editor surface ----------------------------------------------------- */
+.editor-surface {
+  position: relative;
+  padding: 1.25rem 1.35rem;
+}
+
+/* ---- Legend ------------------------------------------------------------- */
+.legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+.legend__item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+}
+.legend__item h3 {
+  margin: 0 0 0.25rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.legend__item p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+/* ---- HTML output panel -------------------------------------------------- */
+.output {
+  margin-top: 1.75rem;
+}
+.output__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: linear-gradient(#ffffff, #fcfdff);
+}
+.output__label {
+  font-size: 0.78rem;
+  font-weight: 650;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.output__pre {
+  margin: 0;
+  background: var(--code-bg);
+  color: var(--code-fg);
+  padding: 1rem 1.1rem;
+  border-radius: 0 0 var(--radius) var(--radius);
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.6;
+  max-height: 320px;
+}
+.copybtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 650;
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.copybtn:hover {
+  border-color: var(--border-strong);
+  background: #f8fafc;
+}
+
+.footer {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--muted-2);
+  text-align: center;
+}
+.footer a {
+  color: var(--brand);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------------
+   Minimal ProseMirror + table editing styles the demo needs.
+   --------------------------------------------------------------------------- */
+.ProseMirror {
+  outline: none;
+  min-height: 14rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+.ProseMirror:focus {
+  outline: none;
+}
+.ProseMirror > :first-child {
+  margin-top: 0;
+}
+.ProseMirror h2 {
+  font-size: 1.15rem;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  margin: 1.2em 0 0.5em;
+}
+.ProseMirror p {
+  margin: 0.5em 0;
+}
+.ProseMirror td,
+.ProseMirror th {
+  position: relative;
+}
+/* Cell selection highlight (prosemirror-tables). */
+.ProseMirror .selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(79 70 229 / 0.12);
+  pointer-events: none;
+}
+/* The resize handles are portaled into .tableWrapper and sit right on the table
+   edges. Keep the wrapper's overflow visible so those handles show fully and
+   don't trigger spurious x/y scrollbars. If you need horizontal scrolling for
+   very wide tables, put `overflow-x: auto` on an OUTER container instead. */
+.tableWrapper {
+  position: relative;
+  overflow: visible;
+}
