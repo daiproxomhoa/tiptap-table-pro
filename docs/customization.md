@@ -52,9 +52,29 @@ Part classes are shown with their `__suffix`; the full class is
 
 See each component's page for defaults and examples.
 
-## Design tokens
+## Styling & design tokens
 
-The UI is built on Tailwind + shadcn/ui tokens (`bg-background`,
-`text-destructive`, `border-input`, `--primary`, `--ring`, …). Re-theming those
-CSS variables in your app restyles the components globally. The headless
-[core](./core-extensions.md) needs none of this.
+Import the shipped stylesheet once — no Tailwind or shadcn setup required:
+
+```ts
+import "tiptap-table-pro/styles.css";
+```
+
+The components read CSS variables for their theme. Override them anywhere to
+re-theme the UI:
+
+```css
+:root {
+  --color-primary: hsl(221 83% 53%);
+  --color-primary-foreground: hsl(210 40% 98%);
+  --color-destructive: hsl(0 84% 60%);
+  --color-border: hsl(214 32% 91%);
+  --color-input: hsl(214 32% 91%);
+  --color-ring: hsl(221 83% 53%);
+  --radius: 0.5rem;
+}
+```
+
+If your app already uses Tailwind + shadcn tokens, you can skip the CSS import;
+the components use the same token names. The headless
+[core](./core-extensions.md) needs no CSS at all.

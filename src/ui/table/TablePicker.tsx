@@ -7,6 +7,7 @@ import { Toggle } from "../primitives/toggle";
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from "../primitives/tooltip";
 import { cn } from "../../lib/utils";
@@ -50,6 +51,7 @@ export function TablePicker({
   };
 
   return (
+    <TooltipProvider>
     <Popover open={open} onOpenChange={setOpen}>
       <Tooltip>
         <TooltipTrigger asChild>
@@ -103,5 +105,6 @@ export function TablePicker({
         </div>
       </PopoverContent>
     </Popover>
+    </TooltipProvider>
   );
 }

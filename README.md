@@ -19,6 +19,7 @@ Tables authored with `tiptap-table-pro` carry their formatting as inline styles,
 - **Two layers, cleanly separated.** A headless `core` entry (extensions only) and a full entry that adds the React UI. Use whichever you need.
 - **Customizable.** Every component exposes configuration props (color palettes, grid size, header behavior, …) and stable `ttp-*` CSS classes plus a `className` prop on each root.
 - **Localizable.** All UI strings can be overridden through a lightweight provider.
+- **Self-contained styling.** Ships its own compiled stylesheet — import one CSS file and the UI is fully styled. No Tailwind or shadcn setup required in your app.
 - **Fully typed.** Ships ESM + CJS builds and complete TypeScript declarations.
 
 ## Contents
@@ -30,7 +31,7 @@ Tables authored with `tiptap-table-pro` carry their formatting as inline styles,
 - [Adding the editing UI](#adding-the-editing-ui)
 - [Feature reference](#feature-reference)
 - [Per-feature guides](#per-feature-guides)
-- [Styling requirement for the UI](#styling-requirement-for-the-ui)
+- [Styling the UI](#styling-the-ui)
 - [Customization](#customization)
 - [Localization](#localization)
 - [API](#api)
@@ -48,7 +49,7 @@ Tables authored with `tiptap-table-pro` carry their formatting as inline styles,
 
 Any TipTap 3 app already satisfies these. Everything else the library needs is a regular **dependency**, installed automatically with the package, so a missing dependency cannot break it. To keep that footprint small the UI ships its own inline SVG icons and class helpers (no `lucide-react`, `clsx`, `class-variance-authority` or `tailwind-merge`); the only third-party UI runtime dependency is **Radix UI** (for accessible dialog / dropdown / popover / select / tooltip primitives). The headless `core` entry has **zero** non-TipTap dependencies.
 
-The React UI additionally expects **Tailwind CSS** with shadcn/ui design tokens — see [Styling requirement](#styling-requirement-for-the-ui). The headless `core` entry has no styling dependency.
+For the React UI, import the shipped stylesheet once (`import "tiptap-table-pro/styles.css"`) — no Tailwind or shadcn setup needed. See [Styling the UI](#styling-the-ui). The headless `core` entry has no styling dependency at all.
 
 ## Installation
 
@@ -188,11 +189,34 @@ Detailed usage, props, examples, and CSS classes for each feature live in
 - [Customization](./docs/customization.md) — `className` props and the `ttp-*` class reference.
 - [Localization](./docs/localization.md) — translate or reword the labels.
 
-## Styling requirement for the UI
+## Styling the UI
 
-The React UI is built with Tailwind utility classes and shadcn/ui design tokens (`bg-background`, `text-destructive`, `border-input`, and so on). To render it correctly, your app must have **Tailwind CSS** configured with the standard shadcn CSS variables (`--background`, `--foreground`, `--primary`, `--destructive`, `--border`, `--ring`, …).
+The React UI ships a **self-contained, precompiled stylesheet**. Import it once,
+anywhere in your app, and the components are fully styled — you do **not** need
+Tailwind or shadcn tokens configured:
 
-This applies only to the React UI. The headless `core` entry outputs plain, inline-styled HTML and requires no Tailwind or design tokens.
+```ts
+import "tiptap-table-pro/styles.css";
+```
+
+The stylesheet only adds the utilities the components use plus a minimal base
+(box-sizing + a default border color); it does **not** ship a global CSS reset,
+so it won't clobber your app's styles. The design tokens (colors, radius) are
+CSS variables you can override:
+
+```css
+:root {
+  --color-primary: hsl(221 83% 53%);
+  --color-destructive: hsl(0 84% 60%);
+  --color-border: hsl(214 32% 91%);
+  /* … */
+}
+```
+
+Already using Tailwind + shadcn in your app? You can skip the CSS import — the
+components use the same token names and will pick up your theme.
+
+The headless `core` entry outputs plain, inline-styled HTML and needs no CSS at all.
 
 ## Customization
 
