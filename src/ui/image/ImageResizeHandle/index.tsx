@@ -10,6 +10,7 @@ import {
   initialResizeBox,
   setBodyStyle,
 } from "./utils";
+import { setResizeDragging } from "../../resize-drag-store";
 
 interface ImageResizeHandleProps {
   editor: Editor;
@@ -27,7 +28,7 @@ export function ImageResizeHandle({ editor }: ImageResizeHandleProps) {
     text: string;
   } | null>(null);
   const isDragging = useRef(false);
-  // Abort the in-progress drag (remove mousemove/mouseup) — called when unmounting
+  // Abort the in-progress drag (remove the pointer listeners) — called when unmounting
   // mid-drag.
   const abortDragRef = useRef<(() => void) | null>(null);
 
@@ -68,7 +69,7 @@ export function ImageResizeHandle({ editor }: ImageResizeHandleProps) {
   }, [isImage, editor]);
 
   const startDrag = (
-    e: React.MouseEvent,
+    e: React.PointerEvent,
     mode: "width" | "height" | "both",
     sx: 1 | -1,
     sy: 1 | -1,
@@ -80,6 +81,7 @@ export function ImageResizeHandle({ editor }: ImageResizeHandleProps) {
     if (!img) return;
 
     isDragging.current = true;
+    setResizeDragging(true); // the bubble menus hide while dragging
     setBodyStyle(cursor, "none");
 
     // The source of the original size = the width/height attrs (falling back to
@@ -130,11 +132,13 @@ export function ImageResizeHandle({ editor }: ImageResizeHandleProps) {
     // removeEventListener), reset the cursor + drag flag. Shared by mouse release
     // and mid-drag unmount.
     const cleanup = () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
+      document.removeEventListener("pointermove", onMouseMove);
+      document.removeEventListener("pointerup", onMouseUp);
+      document.removeEventListener("pointercancel", onMouseUp);
       abortDragRef.current = null;
       setBodyStyle("", "");
       isDragging.current = false;
+      setResizeDragging(false);
     };
 
     const onMouseUp = () => {
@@ -146,7 +150,7 @@ export function ImageResizeHandle({ editor }: ImageResizeHandleProps) {
       // — Shift changes both.
       const commitW = img.style.width ? parseFloat(img.style.width) : null;
       const commitH = img.style.height ? parseFloat(img.style.height) : null;
-      // Do NOT call .focus() — focus() moves the selection to the editor, losing
+      // Do NOT chain .focus() — focus() moves the selection to the editor, losing
       // the image NodeSelection → the handles disappear after resizing. Keep the
       // image selection intact.
       editor
@@ -156,10 +160,17 @@ export function ImageResizeHandle({ editor }: ImageResizeHandleProps) {
           ...(commitH != null ? { height: Math.round(commitH) } : {}),
         })
         .run();
+      // Hand DOM focus back to the editor (view.focus() is pure DOM and does NOT
+      // touch the selection, so the image NodeSelection survives) — otherwise the
+      // editor is left blurred after the drag.
+      editor.view.focus();
     };
 
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    // Pointer events cover both mouse and touch (mobile); pointercancel = the browser
+    // stole the gesture mid-drag → commit as if the pointer was released.
+    document.addEventListener("pointermove", onMouseMove);
+    document.addEventListener("pointerup", onMouseUp);
+    document.addEventListener("pointercancel", onMouseUp);
     // Unmount mid-drag → cleanup (remove listeners, don't commit since the
     // selection is already lost).
     abortDragRef.current = cleanup;
@@ -168,8 +179,9 @@ export function ImageResizeHandle({ editor }: ImageResizeHandleProps) {
   if (!isImage || !wrapperEl) return null;
 
   // A solid blue square at each edge/corner (like TableResizeHandle).
+  // touch-none: without it mobile treats a touch-drag as page scrolling and resizing dies.
   const handleClass =
-    "absolute size-2.5 rounded-[2px] bg-primary border border-background shadow-sm";
+    "absolute size-2.5 rounded-[2px] bg-primary border border-background shadow-sm touch-none";
 
   return (
     <>
@@ -192,7 +204,7 @@ export function ImageResizeHandle({ editor }: ImageResizeHandleProps) {
         HANDLES.map(({ key, mode, sx, sy, cursor, z, style }) => (
           <div
             key={key}
-            onMouseDown={(e) => startDrag(e, mode, sx, sy, cursor)}
+            onPointerDown={(e) => startDrag(e, mode, sx, sy, cursor)}
             style={{ ...style, zIndex: z, cursor }}
             className={handleClass}
           />

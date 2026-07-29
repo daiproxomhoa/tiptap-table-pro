@@ -1,6 +1,6 @@
 {
   "name": "tiptap-ui-pro",
-  "version": "0.2.5",
+  "version": "0.3.0",
   "description": "Styled, resizable TipTap 3 table extensions with a full editing UI: bubble menu, context menu, column/row/table resize handles, cell & table property dialogs, border and background color controls.",
   "keywords": [
     "tiptap",
@@ -48,6 +48,8 @@
     "build:css": "tailwindcss -i styles/lib.css -o dist/styles.css --minify",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
@@ -83,9 +85,11 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "@tailwindcss/cli": "^4.0.0",
+    "jsdom": "^29.1.1",
     "tailwindcss": "^4.0.0",
     "tsup": "^8.3.0",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "vitest": "^4.1.8"
   },
   "publishConfig": {
     "access": "public"

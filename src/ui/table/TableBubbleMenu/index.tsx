@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { cn } from "../../../lib/utils";
 import { useIntl } from "../../../lib/intl";
 import { firstCellBorderColor, setAllCellsBorderColor } from "../utils";
+import { useResizeDrag } from "../../resize-drag-store";
 import { RowColumnControls } from "./RowColumnControls";
 import { TableAlignControls } from "./TableAlignControls";
 import { Tip } from "./Tip";
@@ -76,7 +77,11 @@ export function TableBubbleMenu({ editor, className }: TableBubbleMenuProps) {
     selector: ({ editor: e }) => e.getAttributes("table").align ?? "left",
   });
 
-  if (!inTable || !focused || !pos) return null;
+  // A resize drag is in progress (table / row / column / image) → hide the menu so it
+  // stays out of the way.
+  const resizing = useResizeDrag((s) => s.dragging);
+
+  if (!inTable || !focused || !pos || resizing) return null;
 
   return (
     <TooltipProvider delayDuration={400}>

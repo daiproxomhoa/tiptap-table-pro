@@ -4,6 +4,7 @@ import { useEditorState, type Editor } from "@tiptap/react";
 import { focusedTableEl, setBodyStyle, setColumnWidths } from "../utils";
 import { clampColBoundary, splitAdjacentWidths } from "../resize-math";
 import { cn } from "../../../lib/utils";
+import { setResizeDragging } from "../../resize-drag-store";
 
 interface ColResizeHandleProps {
   editor: Editor;
@@ -92,7 +93,7 @@ export function ColResizeHandle({ editor, className }: ColResizeHandleProps) {
     };
   }, [inTable, editor]);
 
-  const startDrag = (e: React.MouseEvent, colIndex: number) => {
+  const startDrag = (e: React.PointerEvent, colIndex: number) => {
     e.preventDefault();
     e.stopPropagation();
     const table = tableRef.current;
@@ -110,6 +111,7 @@ export function ColResizeHandle({ editor, className }: ColResizeHandleProps) {
     const total = widths[colIndex] + widths[colIndex + 1];
 
     isDragging.current = true;
+    setResizeDragging(true); // the bubble menus hide while dragging
     setBodyStyle("col-resize", "none");
     const wrapLeft = () => wrapper.getBoundingClientRect().left;
     const clampX = (clientX: number) =>
@@ -121,10 +123,12 @@ export function ColResizeHandle({ editor, className }: ColResizeHandleProps) {
       setGuideLeft(clampX(ev.clientX) - wrapLeft());
     };
     const onUp = (ev: MouseEvent) => {
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerup", onUp);
+      document.removeEventListener("pointercancel", onUp);
       setBodyStyle("", "");
       isDragging.current = false;
+      setResizeDragging(false);
       setGuideLeft(null);
 
       const [leftW, rightW] = splitAdjacentWidths(
@@ -140,8 +144,10 @@ export function ColResizeHandle({ editor, className }: ColResizeHandleProps) {
       const pos = Math.min(savedFrom, editor.state.doc.content.size);
       editor.chain().focus().setTextSelection(pos).run();
     };
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
+    // Pointer events cover both mouse and touch (mobile).
+    document.addEventListener("pointermove", onMove);
+    document.addEventListener("pointerup", onUp);
+    document.addEventListener("pointercancel", onUp);
   };
 
   if (!inTable || !wrapperEl || boundaries.length === 0) return null;
@@ -151,9 +157,11 @@ export function ColResizeHandle({ editor, className }: ColResizeHandleProps) {
       {boundaries.map((x, i) => (
         <div
           key={i}
-          onMouseDown={(e) => startDrag(e, i)}
+          onPointerDown={(e) => startDrag(e, i)}
           className={cn(
-            "ttp-col-resize-handle group absolute top-0 bottom-0 flex w-2.5 -translate-x-1/2 justify-center cursor-col-resize",
+            // touch-none: without it mobile treats a touch-drag as page scrolling and
+            // resizing never starts.
+            "ttp-col-resize-handle group absolute top-0 bottom-0 flex w-2.5 -translate-x-1/2 justify-center cursor-col-resize touch-none",
             className,
           )}
           style={{ left: x }}
