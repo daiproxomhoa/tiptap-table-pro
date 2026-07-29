@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useReducer, useState } from "react";
 import type { Editor } from "@tiptap/react";
 import { FormattedMessage } from "../../../../lib/intl";
 import {
@@ -13,10 +13,11 @@ import { DialogSideTabs, type DialogTab } from "../DialogSideTabs";
 import {
   firstCellBorderColor,
   firstCellAttr,
+  normalizeBorderWidth,
   setAllCellsAttrs,
 } from "../../utils";
-import { NONE } from "./constants";
-import { GeneralTab, type Align } from "./GeneralTab";
+import { NONE, type TableForm } from "./constants";
+import { GeneralTab } from "./GeneralTab";
 import { AdvancedTab } from "./AdvancedTab";
 
 interface TablePropertiesDialogProps {
@@ -32,46 +33,54 @@ function parseStyle(style: string | null): { width: string; height: string } {
   return { width: w, height: h };
 }
 
+/** Seed the form from the table's attrs + the first cell's (the border is a per-cell attr). */
+function initTableForm(editor: Editor): TableForm {
+  const attrs = editor.getAttributes("table");
+  const initial = parseStyle(attrs.style ?? null);
+  const cellBorder = firstCellBorderColor(editor);
+  return {
+    width: initial.width,
+    height: initial.height,
+    align: attrs.align ?? "left",
+    borderless: cellBorder === "transparent",
+    borderColor: cellBorder && cellBorder !== "transparent" ? cellBorder : "",
+    borderWidth: firstCellAttr(editor, "borderWidth") ?? "",
+    borderStyle: firstCellAttr(editor, "borderStyle") ?? NONE,
+  };
+}
+
 export function TablePropertiesDialog({
   editor,
   open,
   onOpenChange,
 }: TablePropertiesDialogProps) {
-  const attrs = editor.getAttributes("table");
-  const initial = parseStyle(attrs.style ?? null);
-  // The border is a per-cell attribute; read the first cell as the initial state.
-  const cellBorder = firstCellBorderColor(editor);
-
   const [tab, setTab] = useState<DialogTab>("general");
-  const [width, setWidth] = useState(initial.width);
-  const [height, setHeight] = useState(initial.height);
-  const [align, setAlign] = useState<Align>(attrs.align ?? "left");
-  const [borderless, setBorderless] = useState<boolean>(
-    cellBorder === "transparent",
-  );
-  const [borderColor, setBorderColor] = useState<string>(
-    cellBorder && cellBorder !== "transparent" ? cellBorder : "",
-  );
-  const [borderWidth, setBorderWidth] = useState<string>(
-    firstCellAttr(editor, "borderWidth") ?? "",
-  );
-  const [borderStyle, setBorderStyle] = useState<string>(
-    firstCellAttr(editor, "borderStyle") ?? NONE,
+  // 7 fields of one form → a single patch-style reducer instead of 7 useState hooks:
+  // patch({ width: "50%" }) — adding a field only touches TableForm + initTableForm.
+  const [form, patch] = useReducer(
+    (s: TableForm, p: Partial<TableForm>): TableForm => ({ ...s, ...p }),
+    editor,
+    initTableForm,
   );
 
   const save = () => {
     const parts: string[] = [];
-    if (width.trim()) parts.push(`width: ${width.trim()}`);
-    if (height.trim()) parts.push(`height: ${height.trim()}`);
+    if (form.width.trim()) parts.push(`width: ${form.width.trim()}`);
+    if (form.height.trim()) parts.push(`height: ${form.height.trim()}`);
     const style = parts.join("; ") || null;
-    const cellBorderColor = borderless
+    const cellBorderColor = form.borderless
       ? "transparent"
-      : borderColor.trim() || null;
-    editor.chain().focus().updateAttributes("table", { style, align }).run();
+      : form.borderColor.trim() || null;
+    editor
+      .chain()
+      .focus()
+      .updateAttributes("table", { style, align: form.align })
+      .run();
     setAllCellsAttrs(editor, {
       borderColor: cellBorderColor,
-      borderWidth: borderWidth.trim() || null,
-      borderStyle: borderStyle === NONE ? null : borderStyle,
+      // A bare number is read as px (normalizeBorderWidth).
+      borderWidth: normalizeBorderWidth(form.borderWidth),
+      borderStyle: form.borderStyle === NONE ? null : form.borderStyle,
     });
     onOpenChange(false);
   };
@@ -90,25 +99,9 @@ export function TablePropertiesDialog({
 
           <div className="flex-1 space-y-3">
             {tab === "general" ? (
-              <GeneralTab
-                width={width}
-                setWidth={setWidth}
-                height={height}
-                setHeight={setHeight}
-                align={align}
-                setAlign={setAlign}
-              />
+              <GeneralTab form={form} onPatch={patch} />
             ) : (
-              <AdvancedTab
-                borderless={borderless}
-                setBorderless={setBorderless}
-                borderWidth={borderWidth}
-                setBorderWidth={setBorderWidth}
-                borderStyle={borderStyle}
-                setBorderStyle={setBorderStyle}
-                borderColor={borderColor}
-                setBorderColor={setBorderColor}
-              />
+              <AdvancedTab form={form} onPatch={patch} />
             )}
           </div>
         </div>

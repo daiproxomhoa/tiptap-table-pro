@@ -1,5 +1,19 @@
 export const NONE = "none";
 
+export type Align = "left" | "center" | "right";
+
+/** Table-properties form state — managed by a single patch-style useReducer in index.tsx
+ * instead of 7 separate useState hooks. */
+export interface TableForm {
+  width: string;
+  height: string;
+  align: Align;
+  borderless: boolean;
+  borderColor: string;
+  borderWidth: string;
+  borderStyle: string;
+}
+
 export const BORDER_PRESETS = [
   // neutrals
   "#000000",

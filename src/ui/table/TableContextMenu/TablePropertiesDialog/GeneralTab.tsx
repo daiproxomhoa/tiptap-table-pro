@@ -9,25 +9,14 @@ import {
   SelectValue,
 } from "../../../primitives/select";
 
-export type Align = "left" | "center" | "right";
+import { type Align, type TableForm } from "./constants";
 
 interface GeneralTabProps {
-  width: string;
-  setWidth: (v: string) => void;
-  height: string;
-  setHeight: (v: string) => void;
-  align: Align;
-  setAlign: (v: Align) => void;
+  form: TableForm;
+  onPatch: (p: Partial<TableForm>) => void;
 }
 
-export function GeneralTab({
-  width,
-  setWidth,
-  height,
-  setHeight,
-  align,
-  setAlign,
-}: GeneralTabProps) {
+export function GeneralTab({ form, onPatch }: GeneralTabProps) {
   const intl = useIntl();
   return (
     <>
@@ -38,8 +27,8 @@ export function GeneralTab({
           })}
         >
           <Input
-            value={width}
-            onChange={(e) => setWidth(e.target.value)}
+            value={form.width}
+            onChange={(e) => onPatch({ width: e.target.value })}
             placeholder="100%"
           />
         </FieldLabel>
@@ -49,8 +38,8 @@ export function GeneralTab({
           })}
         >
           <Input
-            value={height}
-            onChange={(e) => setHeight(e.target.value)}
+            value={form.height}
+            onChange={(e) => onPatch({ height: e.target.value })}
             placeholder="auto"
           />
         </FieldLabel>
@@ -60,7 +49,10 @@ export function GeneralTab({
           defaultMessage: "Alignment", id: "alignment",
         })}
       >
-        <Select value={align} onValueChange={(v) => setAlign(v as Align)}>
+        <Select
+          value={form.align}
+          onValueChange={(v) => onPatch({ align: v as Align })}
+        >
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
