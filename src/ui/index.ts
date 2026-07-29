@@ -11,3 +11,12 @@ export { LinkDialog } from "./LinkDialog";
 // Image editing UI.
 export { ImageBubbleMenu } from "./image/ImageBubbleMenu";
 export { ImageResizeHandle } from "./image/ImageResizeHandle";
+
+// Shared "a resize drag is in progress" flag. Exported so host apps can hide their own
+// floating UI while the user drags a resize handle (the built-in bubble menus already do).
+export {
+  useResizeDrag,
+  setResizeDragging,
+  getResizeDragging,
+  subscribeResizeDrag,
+} from "./resize-drag-store";

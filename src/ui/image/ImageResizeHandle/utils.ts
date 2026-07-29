@@ -2,10 +2,9 @@ import type { Editor } from "@tiptap/react";
 
 import { MIN } from "./constants";
 
-export function setBodyStyle(cursor: string, userSelect: string) {
-  document.body.style.cursor = cursor;
-  document.body.style.userSelect = userSelect;
-}
+// Reuse the table implementation (it also injects the `* { cursor !important }` rule that
+// keeps the resize cursor for the whole drag) instead of duplicating it here.
+export { setBodyStyle } from "../../table/utils";
 
 /** The DOM wrapper ([data-resize-wrapper]) of the selected image. */
 export function focusedImageWrapper(editor: Editor): {

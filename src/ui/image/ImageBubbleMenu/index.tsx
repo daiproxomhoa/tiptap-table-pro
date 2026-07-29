@@ -11,6 +11,7 @@ import {
 } from "../../../lib/icons";
 import { Button } from "../../primitives/button";
 import { TooltipProvider } from "../../primitives/tooltip";
+import { useResizeDrag } from "../../resize-drag-store";
 import type { Panel } from "./constants";
 import { DEFAULT_ADJUST } from "./constants";
 import { unwrapFigure } from "./utils";
@@ -77,7 +78,10 @@ export function ImageBubbleMenu({ editor }: { editor: Editor }) {
     };
   }, [isImage, editor]);
 
-  if (!isImage || !pos) return null;
+  // A resize drag is in progress (a handle sets the flag) → hide the menu, same as tables.
+  const resizing = useResizeDrag((s) => s.dragging);
+
+  if (!isImage || !pos || resizing) return null;
 
   const back = () => setPanel("main");
   const reset = () => {

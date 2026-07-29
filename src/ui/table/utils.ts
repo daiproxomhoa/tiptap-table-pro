@@ -5,10 +5,27 @@ export const isValidHex = (value: string) => /^#[0-9a-fA-F]{6}$/.test(value);
 
 /** Set cursor + userSelect on the body while dragging to resize (a helper outside the
  * component to avoid the react-hooks/immutability rule falsely flagging a mutation in the
- * render path). */
+ * render path).
+ *
+ * `body { cursor }` alone loses to any descendant with its own cursor (ProseMirror text,
+ * buttons…) as the pointer sweeps over them, so while dragging we also inject a
+ * `* { cursor: … !important }` rule to keep the resize cursor across the whole screen.
+ * Pass an empty cursor to remove the rule again. */
+let dragCursorStyleEl: HTMLStyleElement | null = null;
+
 export function setBodyStyle(cursor: string, userSelect: string) {
   document.body.style.cursor = cursor;
   document.body.style.userSelect = userSelect;
+  if (cursor) {
+    if (!dragCursorStyleEl) {
+      dragCursorStyleEl = document.createElement("style");
+      document.head.appendChild(dragCursorStyleEl);
+    }
+    dragCursorStyleEl.textContent = `* { cursor: ${cursor} !important; }`;
+  } else {
+    dragCursorStyleEl?.remove();
+    dragCursorStyleEl = null;
+  }
 }
 
 /** The DOM <table> containing the current selection (not the first table in the editor). */

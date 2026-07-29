@@ -4,6 +4,7 @@ import { useEditorState, type Editor } from "@tiptap/react";
 import { focusedTableEl, setBodyStyle, setRowHeight } from "../utils";
 import { clampRowBottom } from "../resize-math";
 import { cn } from "../../../lib/utils";
+import { setResizeDragging } from "../../resize-drag-store";
 
 interface RowResizeHandleProps {
   editor: Editor;
@@ -64,9 +65,13 @@ export function RowResizeHandle({ editor, className }: RowResizeHandleProps) {
     };
   }, [inTable, editor]);
 
-  const startDrag = (e: React.MouseEvent, rowIndex: number) => {
+  const startDrag = (e: React.PointerEvent, rowIndex: number) => {
     e.preventDefault();
     e.stopPropagation();
+    // Remember the selection so it can be restored after the commit: dragging can blur the
+    // editor (selection escapes the table → handles and menus disappear). Same as
+    // TableResizeHandle.
+    const savedFrom = editor.state.selection.from;
     const table = tableRef.current;
     const wrapper = wrapperRef.current;
     if (!table || !wrapper) return;
@@ -77,6 +82,7 @@ export function RowResizeHandle({ editor, className }: RowResizeHandleProps) {
     if (!tr) return;
 
     isDragging.current = true;
+    setResizeDragging(true); // the bubble menus hide while dragging
     setBodyStyle("ns-resize", "none");
 
     const trRect = tr.getBoundingClientRect();
@@ -117,17 +123,25 @@ export function RowResizeHandle({ editor, className }: RowResizeHandleProps) {
       setGuideTop(clampY(ev.clientY) - wrapTop());
     };
     const onUp = (ev: MouseEvent) => {
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerup", onUp);
+      document.removeEventListener("pointercancel", onUp);
       setBodyStyle("", "");
       isDragging.current = false;
+      setResizeDragging(false);
       setGuideTop(null);
 
       const finalH = Math.round(clampY(ev.clientY) - rowTop);
       setRowHeight(editor, rowIndex, `${finalH}px`);
+      // Restore focus + selection inside the table, otherwise the editor is left blurred
+      // after the drag and the bubble menu / handles disappear.
+      const pos = Math.min(savedFrom, editor.state.doc.content.size);
+      editor.chain().focus().setTextSelection(pos).run();
     };
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
+    // Pointer events cover both mouse and touch (mobile).
+    document.addEventListener("pointermove", onMove);
+    document.addEventListener("pointerup", onUp);
+    document.addEventListener("pointercancel", onUp);
   };
 
   if (!inTable || !wrapperEl || rows.length === 0) return null;
@@ -141,9 +155,11 @@ export function RowResizeHandle({ editor, className }: RowResizeHandleProps) {
         return (
           <div
             key={i}
-            onMouseDown={(e) => startDrag(e, i)}
+            onPointerDown={(e) => startDrag(e, i)}
             className={cn(
-              "ttp-row-resize-handle group absolute left-0 right-0 flex h-2.5 -translate-y-1/2 items-center cursor-ns-resize",
+              // touch-none: without it mobile treats a touch-drag as page scrolling and
+              // resizing never starts.
+              "ttp-row-resize-handle group absolute left-0 right-0 flex h-2.5 -translate-y-1/2 items-center cursor-ns-resize touch-none",
               className,
             )}
             style={{ top }}

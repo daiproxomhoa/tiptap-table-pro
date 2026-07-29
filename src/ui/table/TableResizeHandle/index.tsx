@@ -11,6 +11,7 @@ import {
 import { HANDLES } from "./constants";
 import { applyStoredStyles, tableMinContentWidth } from "./utils";
 import { cn } from "../../../lib/utils";
+import { setResizeDragging } from "../../resize-drag-store";
 import {
   clampDragWidth,
   clampDragHeight,
@@ -57,7 +58,7 @@ export function TableResizeHandle({
   } | null>(null);
   const tableInner = useRef<HTMLElement | null>(null);
   const isDragging = useRef(false);
-  // Abort an in-progress drag (remove mousemove/mouseup) — called when unmounting mid-drag.
+  // Abort an in-progress drag (remove the pointer listeners) — called when unmounting mid-drag.
   const abortDragRef = useRef<(() => void) | null>(null);
   // "Ghost table": an outline frame (w×h px) + a column/row grid overlaid on the real
   // table while dragging, in place of a live preview. Do NOT set real DOM styles while
@@ -135,7 +136,7 @@ export function TableResizeHandle({
   }, [inTable, editor]);
 
   const startDrag = (
-    e: React.MouseEvent,
+    e: React.PointerEvent,
     mode: "width" | "height" | "both",
     sx: 1 | -1,
     sy: 1 | -1,
@@ -162,6 +163,7 @@ export function TableResizeHandle({
     const lastRow = doHeight ? (allRows[allRows.length - 1] ?? null) : null;
 
     isDragging.current = true;
+    setResizeDragging(true); // the bubble menus hide while dragging
     setBodyStyle(cursor, "none");
 
     // Starting size = the REAL table's box (not the wrapper's).
@@ -290,11 +292,13 @@ export function TableResizeHandle({
     // removeEventListener), reset cursor + drag flag. Shared by mouse release and
     // unmounting mid-drag.
     const cleanup = () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
+      document.removeEventListener("pointermove", onMouseMove);
+      document.removeEventListener("pointerup", onMouseUp);
+      document.removeEventListener("pointercancel", onMouseUp);
       abortDragRef.current = null;
       setBodyStyle("", "");
       isDragging.current = false;
+      setResizeDragging(false);
     };
 
     const onMouseUp = () => {
@@ -335,8 +339,11 @@ export function TableResizeHandle({
       editor.chain().focus().setTextSelection(pos).run();
     };
 
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    // Pointer events cover both mouse and touch (mobile); pointercancel = the browser stole
+    // the gesture mid-drag → commit as if the pointer was released.
+    document.addEventListener("pointermove", onMouseMove);
+    document.addEventListener("pointerup", onMouseUp);
+    document.addEventListener("pointercancel", onMouseUp);
     // Unmount mid-drag → cleanup (remove listeners, don't commit since the selection is gone).
     abortDragRef.current = cleanup;
   };
@@ -344,8 +351,9 @@ export function TableResizeHandle({
   if (!inTable || !wrapperEl || !box) return null;
 
   // A solid blue square at each edge/corner (like TinyMCE), no icon.
+  // touch-none: without it mobile treats a touch-drag as page scrolling and resizing dies.
   const handleClass = cn(
-    "ttp-table-resize-handle absolute size-2.5 rounded-[2px] bg-primary border border-background shadow-sm",
+    "ttp-table-resize-handle absolute size-2.5 rounded-[2px] bg-primary border border-background shadow-sm touch-none",
     className,
   );
   // Handle positions along the box edges (left/top px within the wrapper).
@@ -392,7 +400,7 @@ export function TableResizeHandle({
           {HANDLES.map(({ key, mode, sx, sy, cursor, z, cx, cy }) => (
             <div
               key={key}
-              onMouseDown={(e) => startDrag(e, mode, sx, sy, cursor)}
+              onPointerDown={(e) => startDrag(e, mode, sx, sy, cursor)}
               style={{
                 left: cxPos[cx],
                 top: cyPos[cy],
@@ -405,6 +413,10 @@ export function TableResizeHandle({
           ))}
           {ghost && (
             // Ghost table: an outline frame w×h + a column/row grid, overlaid on the real table.
+            // The grid coordinates (rt*w, py) are measured from the frame's OUTER edge, but
+            // absolutely positioned children are laid out against the padding box (inside
+            // border-2) → offset by -2px, otherwise every line sits 2px down/right of the
+            // real table.
             <div
               className="ttp-table-resize-handle__ghost pointer-events-none absolute z-30 border-2 border-blue-500 bg-blue-500/5"
               style={{
@@ -418,14 +430,14 @@ export function TableResizeHandle({
                 <div
                   key={`c${i}`}
                   className="absolute top-0 bottom-0 w-px bg-blue-500/50"
-                  style={{ left: rt * ghost.w }}
+                  style={{ left: rt * ghost.w - 2 }}
                 />
               ))}
               {ghost.rows.map((py, i) => (
                 <div
                   key={`r${i}`}
                   className="absolute left-0 right-0 h-px bg-blue-500/50"
-                  style={{ top: py }}
+                  style={{ top: py - 2 }}
                 />
               ))}
             </div>
