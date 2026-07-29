@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useReducer, useState } from "react";
 import type { Editor } from "@tiptap/react";
 import { FormattedMessage, useIntl } from "../../../../lib/intl";
 import {
@@ -10,10 +10,11 @@ import {
 } from "../../../primitives/dialog";
 import { Button } from "../../../primitives/button";
 import { FieldLabel } from "../../../primitives/field-label";
+import { normalizeBorderWidth } from "../../utils";
 import { CellColorField } from "../CellColorField";
 import { BorderStyleSelect } from "../BorderStyleSelect";
 import { DialogSideTabs, type DialogTab } from "../DialogSideTabs";
-import { NONE } from "./constants";
+import { NONE, type CellForm } from "./constants";
 import { GeneralTab } from "./GeneralTab";
 
 interface CellPropertiesDialogProps {
@@ -30,45 +31,60 @@ function currentCellAttrs(editor: Editor) {
   };
 }
 
+/** Seed the form from the selected cell's attrs (the dialog mounts fresh each time it opens). */
+function initCellForm(editor: Editor): CellForm {
+  const attrs = currentCellAttrs(editor);
+  return {
+    cellType: editor.isActive("tableHeader") ? "header" : "cell",
+    scope: attrs.scope ?? NONE,
+    hAlign: attrs.textAlign ?? NONE,
+    vAlign: attrs.verticalAlign ?? NONE,
+    borderWidth: attrs.borderWidth ?? "",
+    borderStyle: attrs.borderStyle ?? NONE,
+    borderColor:
+      attrs.borderColor && attrs.borderColor !== "transparent"
+        ? attrs.borderColor
+        : "",
+    bgColor: attrs.backgroundColor ?? "",
+  };
+}
+
 export function CellPropertiesDialog({
   editor,
   open,
   onOpenChange,
 }: CellPropertiesDialogProps) {
   const intl = useIntl();
-  const attrs = currentCellAttrs(editor);
   const isHeader = editor.isActive("tableHeader");
 
   const [tab, setTab] = useState<DialogTab>("general");
-  const [cellType, setCellType] = useState(isHeader ? "header" : "cell");
-  const [scope, setScope] = useState<string>(attrs.scope ?? NONE);
-  const [hAlign, setHAlign] = useState<string>(attrs.textAlign ?? NONE);
-  const [vAlign, setVAlign] = useState<string>(attrs.verticalAlign ?? NONE);
-  const [borderWidth, setBorderWidth] = useState<string>(
-    attrs.borderWidth ?? "",
+  // 8 fields of one form → a single patch-style reducer instead of 8 useState hooks:
+  // patch({ scope: "row" }) — adding a field only touches CellForm + initCellForm.
+  const [form, patch] = useReducer(
+    (s: CellForm, p: Partial<CellForm>): CellForm => ({ ...s, ...p }),
+    editor,
+    initCellForm,
   );
-  const [borderStyle, setBorderStyle] = useState<string>(
-    attrs.borderStyle ?? NONE,
-  );
-  const [borderColor, setBorderColor] = useState<string>(
-    attrs.borderColor && attrs.borderColor !== "transparent"
-      ? attrs.borderColor
-      : "",
-  );
-  const [bgColor, setBgColor] = useState<string>(attrs.backgroundColor ?? "");
 
   const save = () => {
     const chain = editor.chain().focus();
     // Change the cell type (cell ↔ header) if it differs from the current one.
-    if ((cellType === "header") !== isHeader) chain.toggleHeaderCell();
+    if ((form.cellType === "header") !== isHeader) chain.toggleHeaderCell();
     chain
-      .setCellAttribute("scope", scope === NONE ? null : scope)
-      .setCellAttribute("textAlign", hAlign === NONE ? null : hAlign)
-      .setCellAttribute("verticalAlign", vAlign === NONE ? null : vAlign)
-      .setCellAttribute("borderWidth", borderWidth.trim() || null)
-      .setCellAttribute("borderStyle", borderStyle === NONE ? null : borderStyle)
-      .setCellAttribute("borderColor", borderColor.trim() || null)
-      .setCellAttribute("backgroundColor", bgColor.trim() || null)
+      .setCellAttribute("scope", form.scope === NONE ? null : form.scope)
+      .setCellAttribute("textAlign", form.hAlign === NONE ? null : form.hAlign)
+      .setCellAttribute(
+        "verticalAlign",
+        form.vAlign === NONE ? null : form.vAlign,
+      )
+      // A bare number is read as px (normalizeBorderWidth).
+      .setCellAttribute("borderWidth", normalizeBorderWidth(form.borderWidth))
+      .setCellAttribute(
+        "borderStyle",
+        form.borderStyle === NONE ? null : form.borderStyle,
+      )
+      .setCellAttribute("borderColor", form.borderColor.trim() || null)
+      .setCellAttribute("backgroundColor", form.bgColor.trim() || null)
       .run();
     onOpenChange(false);
   };
@@ -87,16 +103,7 @@ export function CellPropertiesDialog({
 
           <div className="flex-1 space-y-3">
             {tab === "general" ? (
-              <GeneralTab
-                cellType={cellType}
-                setCellType={setCellType}
-                scope={scope}
-                setScope={setScope}
-                hAlign={hAlign}
-                setHAlign={setHAlign}
-                vAlign={vAlign}
-                setVAlign={setVAlign}
-              />
+              <GeneralTab form={form} onPatch={patch} />
             ) : (
               <div className="space-y-3">
                 <FieldLabel
@@ -105,8 +112,8 @@ export function CellPropertiesDialog({
                   })}
                 >
                   <input
-                    value={borderWidth}
-                    onChange={(e) => setBorderWidth(e.target.value)}
+                    value={form.borderWidth}
+                    onChange={(e) => patch({ borderWidth: e.target.value })}
                     placeholder="1px"
                     className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-hidden focus:ring-1 focus:ring-ring"
                   />
@@ -118,8 +125,8 @@ export function CellPropertiesDialog({
                   })}
                 >
                   <BorderStyleSelect
-                    value={borderStyle}
-                    onChange={setBorderStyle}
+                    value={form.borderStyle}
+                    onChange={(v) => patch({ borderStyle: v })}
                   />
                 </FieldLabel>
 
@@ -127,16 +134,16 @@ export function CellPropertiesDialog({
                   label={intl.formatMessage({
                     defaultMessage: "Border color", id: "borderColor",
                   })}
-                  value={borderColor}
-                  onChange={setBorderColor}
+                  value={form.borderColor}
+                  onChange={(v) => patch({ borderColor: v })}
                 />
 
                 <CellColorField
                   label={intl.formatMessage({
                     defaultMessage: "Background color", id: "background",
                   })}
-                  value={bgColor}
-                  onChange={setBgColor}
+                  value={form.bgColor}
+                  onChange={(v) => patch({ bgColor: v })}
                 />
               </div>
             )}

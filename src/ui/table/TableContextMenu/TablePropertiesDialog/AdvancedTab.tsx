@@ -6,36 +6,22 @@ import { Checkbox } from "../../../primitives/checkbox";
 import { cn } from "../../../../lib/utils";
 import { BorderStyleSelect } from "../BorderStyleSelect";
 import { isValidHex } from "../../utils";
-import { BORDER_PRESETS } from "./constants";
+import { BORDER_PRESETS, type TableForm } from "./constants";
 
 interface AdvancedTabProps {
-  borderless: boolean;
-  setBorderless: (v: boolean) => void;
-  borderWidth: string;
-  setBorderWidth: (v: string) => void;
-  borderStyle: string;
-  setBorderStyle: (v: string) => void;
-  borderColor: string;
-  setBorderColor: (v: string) => void;
+  form: TableForm;
+  onPatch: (p: Partial<TableForm>) => void;
 }
 
-export function AdvancedTab({
-  borderless,
-  setBorderless,
-  borderWidth,
-  setBorderWidth,
-  borderStyle,
-  setBorderStyle,
-  borderColor,
-  setBorderColor,
-}: AdvancedTabProps) {
+export function AdvancedTab({ form, onPatch }: AdvancedTabProps) {
+  const { borderless, borderWidth, borderStyle, borderColor } = form;
   const intl = useIntl();
   return (
     <div className="space-y-3">
       <label className="flex items-center gap-2 text-sm">
         <Checkbox
           checked={borderless}
-          onCheckedChange={(v) => setBorderless(!!v)}
+          onCheckedChange={(v) => onPatch({ borderless: !!v })}
         />
         <FormattedMessage defaultMessage="Hide table borders" id="hideTableBorders" />
       </label>
@@ -53,7 +39,7 @@ export function AdvancedTab({
         >
           <Input
             value={borderWidth}
-            onChange={(e) => setBorderWidth(e.target.value)}
+            onChange={(e) => onPatch({ borderWidth: e.target.value })}
             placeholder="1px"
           />
         </FieldLabel>
@@ -63,7 +49,10 @@ export function AdvancedTab({
             defaultMessage: "Border style", id: "borderStyle",
           })}
         >
-          <BorderStyleSelect value={borderStyle} onChange={setBorderStyle} />
+          <BorderStyleSelect
+            value={borderStyle}
+            onChange={(v) => onPatch({ borderStyle: v })}
+          />
         </FieldLabel>
       </div>
 
@@ -84,7 +73,7 @@ export function AdvancedTab({
                 key={c}
                 type="button"
                 title={c}
-                onClick={() => setBorderColor(c)}
+                onClick={() => onPatch({ borderColor: c })}
                 className={cn(
                   "h-6 w-6 rounded border transition-transform hover:scale-110",
                   borderColor.toLowerCase() === c
@@ -107,7 +96,7 @@ export function AdvancedTab({
               <input
                 type="color"
                 value={isValidHex(borderColor) ? borderColor : "#000000"}
-                onChange={(e) => setBorderColor(e.target.value)}
+                onChange={(e) => onPatch({ borderColor: e.target.value })}
                 className="absolute inset-0 cursor-pointer opacity-0"
               />
             </label>
@@ -116,13 +105,13 @@ export function AdvancedTab({
               maxLength={7}
               className="h-7"
               placeholder="#rrggbb"
-              onChange={(e) => setBorderColor(e.target.value)}
+              onChange={(e) => onPatch({ borderColor: e.target.value })}
             />
             {borderColor && (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setBorderColor("")}
+                onClick={() => onPatch({ borderColor: "" })}
               >
                 <FormattedMessage defaultMessage="Default" id="default" />
               </Button>

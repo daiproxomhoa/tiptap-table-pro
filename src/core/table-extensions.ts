@@ -159,30 +159,45 @@ function countCells(doc: ProseMirrorNode): number {
   return n;
 }
 
-/** After the table structure changes (adding rows/columns, pasting, splitting cells),
- * new cells carry the default borderColor (null). Sync every cell in the table to the
- * table's common color (the first non-null color) so the borders are uniform. If the
- * table is all null → skip. */
-function syncTableBorderColors(doc: ProseMirrorNode, tr: Transaction): boolean {
+/** The 3 per-cell border attrs that must fan out when new cells appear. */
+const SYNCED_BORDER_ATTRS = [
+  "borderColor",
+  "borderWidth",
+  "borderStyle",
+] as const;
+
+/** After the table structure changes (adding rows/columns, pasting, splitting cells), new
+ * cells carry the default border attrs (null) → their border no longer matches the rest
+ * (e.g. the whole table is dashed but the new row is solid). Sync every cell to the table's
+ * common value (the first non-null value, resolved PER ATTR: color / width / style). An attr
+ * that is null across the whole table → skip. */
+function syncTableBorders(doc: ProseMirrorNode, tr: Transaction): boolean {
   let changed = false;
   doc.descendants((node, pos) => {
     if (node.type.name !== "table") return true;
-    let target: string | null = null;
+    const targets: Partial<
+      Record<(typeof SYNCED_BORDER_ATTRS)[number], string>
+    > = {};
     node.descendants((cell) => {
-      if (target === null && isCellNode(cell.type.name)) {
-        target = (cell.attrs.borderColor as string | null) ?? null;
+      if (!isCellNode(cell.type.name)) return true;
+      for (const attr of SYNCED_BORDER_ATTRS) {
+        if (targets[attr] === undefined && cell.attrs[attr] != null) {
+          targets[attr] = cell.attrs[attr] as string;
+        }
       }
       return true;
     });
-    if (target !== null) {
-      node.descendants((cell, offset) => {
-        if (isCellNode(cell.type.name) && cell.attrs.borderColor !== target) {
-          tr.setNodeAttribute(pos + 1 + offset, "borderColor", target);
+    node.descendants((cell, offset) => {
+      if (!isCellNode(cell.type.name)) return true;
+      for (const attr of SYNCED_BORDER_ATTRS) {
+        const target = targets[attr];
+        if (target !== undefined && cell.attrs[attr] !== target) {
+          tr.setNodeAttribute(pos + 1 + offset, attr, target);
           changed = true;
         }
-        return true;
-      });
-    }
+      }
+      return true;
+    });
     return false; // no tables nested inside tables
   });
   return changed;
@@ -215,10 +230,10 @@ export const TableWithStyle = Table.extend({
           if (!transactions.some((t) => t.docChanged)) return null;
           // Only sync when there are NEW cells (adding rows/columns, pasting, splitting).
           // Changing one cell's attr doesn't increase the cell count → skip so the border
-          // color doesn't spread across the whole table.
+          // doesn't spread across the whole table.
           if (countCells(newState.doc) <= countCells(oldState.doc)) return null;
           const tr = newState.tr;
-          return syncTableBorderColors(newState.doc, tr) ? tr : null;
+          return syncTableBorders(newState.doc, tr) ? tr : null;
         },
       }),
     ];

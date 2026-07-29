@@ -62,6 +62,54 @@ describe("table serialization", () => {
     ).getHTML();
     expect(html).toContain("height: 48px");
   });
+
+  it("round-trips per-cell border width/style/color", () => {
+    const html = makeEditor(
+      `<table><tbody><tr><td style="border: 2px dashed #ff0000">C</td></tr></tbody></table>`,
+    ).getHTML();
+    // Serialized as the `border` shorthand: "<width> <style> <color>".
+    expect(html).toMatch(/border:\s*2px\s+dashed\s+(#ff0000|rgb\(255,\s*0,\s*0\))/i);
+  });
+});
+
+describe("border sync on new cells", () => {
+  // A new row/column starts with null border attrs; the appendTransaction plugin fans the
+  // table's existing values out to it so the border stays uniform — resolved per attr
+  // (color / width / style), which is what the 3-attr sync fixed.
+  const DASHED = `<table><tbody><tr><td style="border: 2px dashed #ff0000">A</td><td style="border: 2px dashed #ff0000">B</td></tr></tbody></table>`;
+
+  it("applies width, style AND color to a row added below", () => {
+    const e = makeEditor(DASHED);
+    e.chain().focus().setTextSelection(3).addRowAfter().run();
+
+    const cells: Record<string, unknown>[] = [];
+    e.state.doc.descendants((node) => {
+      if (node.type.name === "tableCell") cells.push(node.attrs);
+      return true;
+    });
+
+    expect(cells.length).toBe(4); // 2 original + 2 new
+    for (const attrs of cells) {
+      expect(attrs.borderWidth).toBe("2px");
+      expect(attrs.borderStyle).toBe("dashed");
+      expect(attrs.borderColor).toBeTruthy();
+    }
+  });
+
+  it("does not spread borders when only one cell's attr changes", () => {
+    const e = makeEditor(
+      `<table><tbody><tr><td>A</td><td>B</td></tr></tbody></table>`,
+    );
+    e.chain().focus().setTextSelection(3).setCellAttribute("borderStyle", "dotted").run();
+
+    const styles: unknown[] = [];
+    e.state.doc.descendants((node) => {
+      if (node.type.name === "tableCell") styles.push(node.attrs.borderStyle);
+      return true;
+    });
+    // Cell count didn't grow → the sync plugin stays out of it: only the edited cell changed.
+    expect(styles.filter((s) => s === "dotted")).toHaveLength(1);
+  });
 });
 
 describe("image serialization", () => {

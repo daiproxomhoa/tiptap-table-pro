@@ -7,29 +7,14 @@ import {
   SelectValue,
 } from "../../../primitives/select";
 import { FieldLabel } from "../../../primitives/field-label";
-import { NONE } from "./constants";
+import { NONE, type CellForm } from "./constants";
 
 interface GeneralTabProps {
-  cellType: string;
-  setCellType: (v: string) => void;
-  scope: string;
-  setScope: (v: string) => void;
-  hAlign: string;
-  setHAlign: (v: string) => void;
-  vAlign: string;
-  setVAlign: (v: string) => void;
+  form: CellForm;
+  onPatch: (p: Partial<CellForm>) => void;
 }
 
-export function GeneralTab({
-  cellType,
-  setCellType,
-  scope,
-  setScope,
-  hAlign,
-  setHAlign,
-  vAlign,
-  setVAlign,
-}: GeneralTabProps) {
+export function GeneralTab({ form, onPatch }: GeneralTabProps) {
   const intl = useIntl();
 
   const opt = (value: string, label: string) => (
@@ -43,7 +28,10 @@ export function GeneralTab({
           defaultMessage: "Cell type", id: "cellType",
         })}
       >
-        <Select value={cellType} onValueChange={setCellType}>
+        <Select
+          value={form.cellType}
+          onValueChange={(v) => onPatch({ cellType: v })}
+        >
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
@@ -67,7 +55,7 @@ export function GeneralTab({
           defaultMessage: "Scope", id: "scope",
         })}
       >
-        <Select value={scope} onValueChange={setScope}>
+        <Select value={form.scope} onValueChange={(v) => onPatch({ scope: v })}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
@@ -89,7 +77,10 @@ export function GeneralTab({
           defaultMessage: "Horizontal align", id: "horizontalAlign",
         })}
       >
-        <Select value={hAlign} onValueChange={setHAlign}>
+        <Select
+          value={form.hAlign}
+          onValueChange={(v) => onPatch({ hAlign: v })}
+        >
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
@@ -107,7 +98,10 @@ export function GeneralTab({
           defaultMessage: "Vertical align", id: "verticalAlign",
         })}
       >
-        <Select value={vAlign} onValueChange={setVAlign}>
+        <Select
+          value={form.vAlign}
+          onValueChange={(v) => onPatch({ vAlign: v })}
+        >
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
