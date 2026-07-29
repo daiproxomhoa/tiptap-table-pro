@@ -107,6 +107,14 @@ export function firstCellAttr(editor: Editor, key: string): string | null {
 export const firstCellBorderColor = (editor: Editor) =>
   firstCellAttr(editor, "borderColor");
 
+/** Normalize a border-width input: a bare number ("2", "1.5") defaults to px ("2px"); a
+ * value that already carries a unit is kept as-is; empty → null (drop the attr). */
+export function normalizeBorderWidth(raw: string): string | null {
+  const v = raw.trim();
+  if (!v) return null;
+  return /^\d+(\.\d+)?$/.test(v) ? `${v}px` : v;
+}
+
 /** Write multiple attrs onto every cell of the table containing the cursor. Borders are a
  * per-cell attr, so both the editor and the export output (renderHTML) use them correctly. */
 export function setAllCellsAttrs(
